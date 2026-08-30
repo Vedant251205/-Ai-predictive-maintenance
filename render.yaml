@@ -1,42 +1,48 @@
-# Render blueprint. With this file in the repository root of the service,
-# Render can configure the whole deployment automatically.
+# Render blueprint.
 #
-# The build step generates the datasets and trains the model on the server, so
-# no large binary artefacts need to be committed to git. Generation is seeded,
-# so the deployed model is byte-for-byte the same one verified locally.
+# The trained model and the precomputed kiln analytics are committed to the
+# repository, so the build only installs runtime dependencies. Nothing is
+# generated or trained on the server.
+#
+# No `region` is declared on purpose: pinning one can conflict with the region
+# a free account is already using, which fails the blueprint sync. Render picks
+# a valid default.
 
 services:
   - type: web
     name: ai-predictive-maintenance
     runtime: python
     plan: free
-    region: singapore          # closest free region to India
     branch: main
-    # The trained model and the precomputed kiln analytics are committed, so the
-    # build only installs runtime dependencies. Nothing is trained on the server.
-    buildCommand: >-
-      pip install --upgrade pip &&
-      pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
-    healthCheckPath: /login
     envVars:
       - key: APP_ENV
         value: production
-      # Major.minor only. Pinning an exact patch release causes some hosts to
-      # fail with "No interpreter found for Python 3.13.1".
+
+      # Render needs a COMPLETE version here. A major.minor value such as
+      # "3.12" is not resolved and the build fails. This env var takes
+      # precedence over the .python-version file, which stays at "3.12"
+      # because other hosts require that shorter form.
       - key: PYTHON_VERSION
-        value: "3.12"
+        value: 3.12.7
+
       - key: FLASK_DEBUG
         value: 0
       - key: EMAIL_ENABLED
         value: 0
       - key: SMS_ENABLED
         value: 0
-      # Render generates a strong random value and keeps it stable.
+
+      # Render generates a strong random value once and keeps it stable.
       - key: FLASK_SECRET_KEY
         generateValue: true
-      # Set these in the Render dashboard. The app refuses to start in
-      # production while they are still the documented demo passwords.
+
+      # You MUST supply these. Render prompts for them while applying the
+      # blueprint. If they are left empty the application deliberately refuses
+      # to start, because it would otherwise be public on the documented demo
+      # passwords - and the deploy fails with
+      # "Refusing to start in production with insecure configuration".
       - key: ADMIN_PASSWORD
         sync: false
       - key: EMPLOYEE_PASSWORD
