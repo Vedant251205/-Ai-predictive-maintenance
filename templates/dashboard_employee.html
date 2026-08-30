@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block title %}Operations Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head" data-refresh-seconds="{{ summary.refresh_seconds * 2 }}">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-helmet-safety" aria-hidden="true"></i>
+            Shift operations
+        </p>
+        <h1><span class="accent">Plant Operations</span> Dashboard</h1>
+        <p>Live condition of every monitored asset, refreshed every
+           {{ summary.refresh_seconds }} seconds from the prediction engine.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('main.alerts') }}">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+            Alert center{% if alert_count %} ({{ alert_count }}){% endif %}
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('predict.cockpit') }}">
+            <i class="fa-solid fa-robot" aria-hidden="true"></i>
+            Predictive cockpit
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Machines healthy</span>
+            <span class="kpi-icon"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.healthy }}<small>/{{ summary.total }}</small></div>
+        <p class="kpi-foot">{{ summary.excellent }} excellent &middot; {{ summary.good }} good</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Warning</span>
+            <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.warning }}</div>
+        <p class="kpi-foot">Plan maintenance this week</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Critical</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.critical }}</div>
+        <p class="kpi-foot">{{ summary.p1_p2 }} urgent work order(s)</p>
+    </article>
+
+    <article class="kpi kpi--cyan">
+        <div class="kpi-head">
+            <span class="kpi-label">Fleet avg health</span>
+            <span class="kpi-icon"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.avg_health }}<small>%</small></div>
+        <p class="kpi-foot">Avg RUL {{ summary.avg_rul_hours|num(0) }} h</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+            <h2>Machine health index</h2>
+            <span class="spacer"></span>
+            <small><span class="live-dot" aria-hidden="true"></span> live</small>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-health" aria-label="Health score per machine"
+                    role="img"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <h2>Condition mix</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-mix" aria-label="Fleet condition distribution"
+                    role="img"></canvas>
+        </div>
+    </section>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-industry" aria-hidden="true"></i>
+            <h2>Live asset condition</h2>
+            <span class="spacer"></span>
+            <small>{{ summary.total }} monitored assets</small>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Machine</th>
+                        <th scope="col">Dept</th>
+                        <th scope="col" class="num">Health</th>
+                        <th scope="col" class="num">Fail prob</th>
+                        <th scope="col" class="num">RUL</th>
+                        <th scope="col" class="num">Service</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="right">Inspect</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for machine in fleet %}
+                    <tr>
+                        <td>
+                            <strong class="mono">{{ machine.machine_id }}</strong><br>
+                            <span class="small text-muted">{{ machine.machine_name }}</span>
+                        </td>
+                        <td class="small">{{ machine.department }}</td>
+                        <td class="num text-{{ machine.colour }}">
+                            <strong>{{ machine.health_score }}</strong>
+                        </td>
+                        <td class="num">{{ machine.failure_prob }}%</td>
+                        <td class="num">{{ machine.rul_hours|num(0) }} h</td>
+                        <td class="num">{{ machine.next_service_days }} d</td>
+                        <td>
+                            <span class="badge-status s-{{ machine.priority_colour }}">
+                                {{ machine.priority }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge-status s-{{ machine.colour }}">
+                                {{ machine.status }}
+                            </span>
+                        </td>
+                        <td class="right">
+                            <a class="btn btn-sm btn-ghost"
+                               href="{{ url_for('predict.cockpit', machine_id=machine.machine_id) }}">
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="grid">
+        <section class="panel">
+            <div class="panel-head">
+                <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                <h2>Latest alerts</h2>
+            </div>
+            <div class="stack">
+                {% for alert in alerts %}
+                    <div class="list-row l-{{ 'danger' if alert.severity == 'critical' else ('warning' if alert.severity == 'warning' else 'info') }}">
+                        <span class="list-body">
+                            <strong>{{ alert.title }}</strong>
+                            <span>{{ alert.created_at|ago }}</span>
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
+                        No alerts raised yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                <h2>Recent predictions</h2>
+                <span class="spacer"></span>
+                <a class="small" href="{{ url_for('history.records') }}">View all</a>
+            </div>
+            <div class="stack">
+                {% for record in recent %}
+                    <div class="list-row l-{{ record.status|status_colour }}">
+                        <span class="list-body">
+                            <strong>{{ record.machine_id or 'Ad-hoc reading' }}
+                                &middot; {{ record.status }}</strong>
+                            <span>Health {{ record.health_score }}% &middot;
+                                  {{ record.created_at|ago }}</span>
+                        </span>
+                        <span class="badge-status s-{{ record.status|status_colour }}">
+                            {{ record.priority }}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fa-solid fa-database" aria-hidden="true"></i>
+                        No predictions stored yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var health = {{ health_series|tojson }};
+    var mix = {{ distribution|tojson }};
+
+    Cockpit.bars("chart-health", health.labels, health.values, health.colours, {
+        label: "Health score", max: 100
+    });
+
+    Cockpit.doughnut("chart-mix", mix.labels, mix.values,
+        ["success", "info", "warning", "danger"]);
+})();
+</script>
+{% endblock %}

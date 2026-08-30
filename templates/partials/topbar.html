@@ -1,0 +1,66 @@
+<header class="topbar">
+    <button class="hamburger" id="nav-toggle" type="button"
+            aria-controls="sidebar" aria-expanded="true"
+            aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
+
+    <div class="logo-strip">
+        {% if assets.primary_logo %}
+            <img class="logo-img"
+                 src="{{ url_for('static', filename=brand.primary_logo_file) }}"
+                 alt="{{ brand.organisation }} logo">
+        {% else %}
+            <span class="wordmark">{{ brand.primary_logo_text }}
+                <span>{{ brand.primary_logo_sub }}</span>
+            </span>
+        {% endif %}
+
+        {% if assets.secondary_logo %}
+            <img class="logo-img"
+                 src="{{ url_for('static', filename=brand.secondary_logo_file) }}"
+                 alt="{{ brand.group }} logo">
+        {% else %}
+            <span class="wordmark wordmark--group">{{ brand.secondary_logo_text }}</span>
+        {% endif %}
+    </div>
+
+    <div class="topbar-title">
+        <strong>{{ brand.platform_name }}</strong>
+        <small>{{ brand.organisation }} &middot; {{ brand.org_tagline }}</small>
+    </div>
+
+    <span class="topbar-spacer"></span>
+
+    <span class="pill pill--date">
+        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+        <span id="live-date">{{ server_date }}</span>
+    </span>
+    <span class="pill pill--time">
+        <i class="fa-regular fa-clock" aria-hidden="true"></i>
+        <span id="live-time">{{ server_time }}</span>
+    </span>
+
+    {% if current_user.user_id %}
+        <div class="user-chip">
+            <span class="avatar" aria-hidden="true">
+                {{ current_user.name[:1]|upper if current_user.name else '?' }}
+            </span>
+            <span class="user-chip-meta">
+                <strong>{{ current_user.name }}</strong>
+                <span>{{ current_user.role }}</span>
+            </span>
+        </div>
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-sm btn-ghost" type="submit">
+                <i class="fa-solid fa-power-off" aria-hidden="true"></i>
+                <span class="d-none d-lg-inline">Sign out</span>
+            </button>
+        </form>
+    {% else %}
+        <a class="btn btn-sm btn-primary" href="{{ url_for('auth.login') }}">
+            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Sign in
+        </a>
+    {% endif %}
+</header>

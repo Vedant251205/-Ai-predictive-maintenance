@@ -1,0 +1,28 @@
+# Secrets - never commit. Real values go in the host's environment settings.
+.env
+
+# Runtime artefacts. The trained model and the database are rebuilt on the
+# server: the build step runs the generators and the trainer, and bootstrap()
+# recreates the database on every start.
+models/*.joblib
+models/*.json
+instance/
+*.db
+
+# The generated datasets are committed on purpose: they are small, seeded and
+# reproducible, and they document exactly what the model was trained on.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

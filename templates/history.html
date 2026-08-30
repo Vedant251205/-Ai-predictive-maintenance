@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}Prediction History{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-database" aria-hidden="true"></i>
+            SQLite archive &middot; {{ database_name }}
+        </p>
+        <h1><span class="accent">Prediction</span> History</h1>
+        <p>Every assessment the platform has produced is persisted, so engineers
+           can review historical machine behaviour, compare results and analyse
+           long-term trends.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('api.predictions') }}">
+            <i class="fa-solid fa-code" aria-hidden="true"></i>
+            JSON feed
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('history.export_csv') }}">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+            Export CSV
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-5">
+    <article class="kpi kpi--primary">
+        <div class="kpi-head">
+            <span class="kpi-label">Total records</span>
+            <span class="kpi-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.total }}</div>
+        <p class="kpi-foot">All predictions ever stored</p>
+    </article>
+
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Healthy</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.healthy }}</div>
+        <p class="kpi-foot">{{ stats.excellent }} excellent &middot; {{ stats.good }} good</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Warning</span>
+            <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.warning }}</div>
+        <p class="kpi-foot">Plan maintenance</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Critical</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.critical }}</div>
+        <p class="kpi-foot">Immediate attention</p>
+    </article>
+
+    <article class="kpi kpi--cyan">
+        <div class="kpi-head">
+            <span class="kpi-label">Avg health</span>
+            <span class="kpi-icon"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.avg_health }}<small>%</small></div>
+        <p class="kpi-foot">Avg RUL {{ stats.avg_rul|num(0) }} h</p>
+    </article>
+</div>
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <h2>Archive</h2>
+        <span class="spacer"></span>
+        <small><span id="table-filter-count">{{ records|length }}</span> shown</small>
+    </div>
+
+    <form method="get" action="{{ url_for('history.records') }}"
+          class="row-gap" style="margin-bottom: 14px;">
+        <div>
+            <label class="visually-hidden" for="status">Status</label>
+            <select id="status" name="status" style="width: auto;">
+                {% for option in status_options %}
+                    <option value="{{ option }}"
+                        {% if status == option %}selected{% endif %}>
+                        {{ 'All statuses' if option == 'all' else option }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex: 1 1 220px;">
+            <label class="visually-hidden" for="q">Search</label>
+            <input type="search" id="q" name="q" value="{{ search }}"
+                   placeholder="Search machine, status or priority...">
+        </div>
+        <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            Apply
+        </button>
+        <a class="btn btn-ghost" href="{{ url_for('history.records') }}">Reset</a>
+        <div style="flex: 1 1 200px;">
+            <label class="visually-hidden" for="table-filter">Filter loaded rows</label>
+            <input type="search" id="table-filter"
+                   placeholder="Filter the rows below instantly...">
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Machine</th>
+                    <th scope="col">Type</th>
+                    <th scope="col" class="num">Air K</th>
+                    <th scope="col" class="num">Proc K</th>
+                    <th scope="col" class="num">RPM</th>
+                    <th scope="col" class="num">Torque</th>
+                    <th scope="col" class="num">Wear</th>
+                    <th scope="col" class="num">Fail %</th>
+                    <th scope="col" class="num">Health</th>
+                    <th scope="col" class="num">RUL h</th>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">By</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for record in records %}
+                <tr data-filter-row>
+                    <td class="mono text-dim">{{ record.id }}</td>
+                    <td class="small nowrap">{{ record.created_at }}</td>
+                    <td>
+                        <strong class="mono">{{ record.machine_id or '-' }}</strong><br>
+                        <span class="small text-muted">
+                            {{ record.machine_name or 'Ad-hoc reading' }}
+                        </span>
+                    </td>
+                    <td class="mono">{{ record.machine_type }}</td>
+                    <td class="num">{{ record.air_temperature_k }}</td>
+                    <td class="num">{{ record.process_temperature_k }}</td>
+                    <td class="num">{{ record.rotational_speed_rpm }}</td>
+                    <td class="num">{{ record.torque_nm }}</td>
+                    <td class="num">{{ record.tool_wear_min }}</td>
+                    <td class="num">{{ record.failure_prob }}</td>
+                    <td class="num text-{{ record.status|status_colour }}">
+                        <strong>{{ record.health_score }}</strong>
+                    </td>
+                    <td class="num">{{ record.rul_hours|num(0) }}</td>
+                    <td>
+                        <span class="badge-status s-{{ priorities[record.priority].colour }}">
+                            {{ record.priority }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-status s-{{ record.status|status_colour }}">
+                            {{ record.status }}
+                        </span>
+                    </td>
+                    <td class="small text-muted">{{ record.created_by }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="15">
+                        <div class="empty">
+                            <i class="fa-solid fa-database" aria-hidden="true"></i>
+                            No predictions stored yet. Run an analysis from the
+                            <a href="{{ url_for('predict.cockpit') }}">Predictive Cockpit</a>
+                            and it will appear here.
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

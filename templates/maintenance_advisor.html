@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance Advisor{% endblock %}
+
+{% block content %}
+<div class="page-head" data-refresh-seconds="{{ summary.refresh_seconds * 2 }}">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>
+            CMMS work-order engine
+        </p>
+        <h1><span class="accent">Intelligent Maintenance</span> Advisor</h1>
+        <p>Automatically prioritises maintenance work orders from machine health
+           and predicted risk, so crews and man-hours land where they matter.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('main.alerts') }}">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+            Alert center
+        </a>
+        <button class="btn btn-primary" type="button" onclick="window.print()">
+            <i class="fa-solid fa-print" aria-hidden="true"></i>
+            Print schedule
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-5">
+    {% for code, meta in priorities.items() %}
+        <article class="kpi kpi--{{ meta.colour }}">
+            <div class="kpi-head">
+                <span class="kpi-label">{{ code }} {{ meta.label }}</span>
+                <span class="kpi-icon">
+                    <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="kpi-value">{{ summary.priority_counts[code] }}</div>
+            <p class="kpi-foot">{{ meta.sla }}</p>
+        </article>
+    {% endfor %}
+</div>
+
+<div class="grid grid-4 mt-16">
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Machines online</span>
+            <span class="kpi-icon"><i class="fa-solid fa-industry" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.total }}</div>
+        <p class="kpi-foot">{{ summary.healthy }} healthy &middot;
+           {{ summary.warning }} warning &middot; {{ summary.critical }} critical</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Urgent queue</span>
+            <span class="kpi-icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.p1_p2 }}</div>
+        <p class="kpi-foot">P1 and P2 orders open now</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Queued man-hours</span>
+            <span class="kpi-icon"><i class="fa-solid fa-user-clock" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.man_hours }}<small> h</small></div>
+        <p class="kpi-foot">Estimated crew effort</p>
+    </article>
+
+    <article class="kpi kpi--cyan">
+        <div class="kpi-head">
+            <span class="kpi-label">Est. MTTR</span>
+            <span class="kpi-icon"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.mttr_estimate }}<small> h</small></div>
+        <p class="kpi-foot">Per actionable work order</p>
+    </article>
+</div>
+
+{% if critical %}
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-circle-exclamation text-danger" aria-hidden="true"></i>
+        <h2>Machines requiring immediate action</h2>
+        <span class="spacer"></span>
+        <small>{{ critical|length }} asset(s) in the urgent queue</small>
+    </div>
+    <div class="grid grid-2">
+        {% for machine in critical %}
+            <div class="layer l-{{ machine.priority_colour }}">
+                <div class="row-between">
+                    <h3>
+                        <i class="fa-solid {{ machine.machine_icon }}" aria-hidden="true"></i>
+                        {{ machine.machine_id }} &middot; {{ machine.machine_name }}
+                    </h3>
+                    <span class="badge-status s-{{ machine.priority_colour }}">
+                        {{ machine.priority }} {{ machine.priority_label }}
+                    </span>
+                </div>
+                <p>{{ machine.recommendation.body }}</p>
+
+                <div class="stat-inline" style="border: none; padding: 0; background: none;">
+                    <div>
+                        <strong class="text-{{ machine.colour }}">{{ machine.health_score }}</strong>
+                        <span>Health</span>
+                    </div>
+                    <div>
+                        <strong class="text-danger">{{ machine.failure_prob }}%</strong>
+                        <span>Failure prob</span>
+                    </div>
+                    <div>
+                        <strong class="text-info">{{ machine.rul_hours|num(0) }} h</strong>
+                        <span>RUL</span>
+                    </div>
+                    <div>
+                        <strong class="text-warning">{{ machine.next_service_days }} d</strong>
+                        <span>Service in</span>
+                    </div>
+                    <div>
+                        <strong>{{ machine.work_order.man_hours }} h</strong>
+                        <span>Man-hours</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+                <p class="tiny">Corrective steps &middot; {{ machine.work_order.department }}</p>
+                <ul>
+                    {% for step in machine.work_order.corrective %}
+                        <li>{{ step }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="row-gap" style="margin-top: 10px;">
+                    <a class="btn btn-sm btn-ghost"
+                       href="{{ url_for('predict.cockpit', machine_id=machine.machine_id) }}">
+                        <i class="fa-solid fa-robot" aria-hidden="true"></i>
+                        Re-run analysis
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+        <h2>Prioritised work order schedule</h2>
+        <span class="spacer"></span>
+        <div class="row-gap">
+            <label class="visually-hidden" for="table-filter">Filter work orders</label>
+            <input type="search" id="table-filter" style="width: 240px;"
+                   placeholder="Filter by machine, dept or priority...">
+            <small><span id="table-filter-count">{{ orders|length }}</span> orders</small>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Machine</th>
+                    <th scope="col">Department</th>
+                    <th scope="col" class="num">Health</th>
+                    <th scope="col" class="num">Failure prob</th>
+                    <th scope="col" class="num">RUL</th>
+                    <th scope="col" class="num">Service in</th>
+                    <th scope="col" class="num">Man-hrs</th>
+                    <th scope="col">Response</th>
+                    <th scope="col">Recommended action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for machine in orders %}
+                <tr data-filter-row>
+                    <td>
+                        <span class="badge-status s-{{ machine.priority_colour }}">
+                            {{ machine.priority }} {{ machine.priority_label }}
+                        </span>
+                    </td>
+                    <td>
+                        <strong class="mono">{{ machine.machine_id }}</strong><br>
+                        <span class="small text-muted">{{ machine.machine_name }}</span>
+                    </td>
+                    <td class="small">{{ machine.department }}</td>
+                    <td class="num text-{{ machine.colour }}">
+                        <strong>{{ machine.health_score }}</strong>
+                    </td>
+                    <td class="num">{{ machine.failure_prob }}%</td>
+                    <td class="num">{{ machine.rul_hours|num(0) }} h</td>
+                    <td class="num">{{ machine.next_service_days }} d</td>
+                    <td class="num">{{ machine.work_order.man_hours }}</td>
+                    <td class="small">{{ machine.work_order.sla }}</td>
+                    <td class="small">{{ machine.action }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+            <h2>Load by department</h2>
+        </div>
+        {% for department in departments %}
+            {% set dept_orders = orders|selectattr('department', 'equalto', department)|list %}
+            {% set dept_hours = dept_orders|sum(attribute='work_order.man_hours') %}
+            <div class="bar-row">
+                <span class="bar-label">{{ department }}</span>
+                <span class="meter">
+                    <span class="{{ ['primary', 'info', 'purple'][loop.index0 % 3] }}"
+                          style="width: {{ (dept_hours / summary.man_hours * 100)|round(1) if summary.man_hours else 0 }}%"></span>
+                </span>
+                <span class="bar-value">{{ dept_hours|round(1) }} h</span>
+            </div>
+        {% endfor %}
+
+        <div class="divider"></div>
+        <p class="tiny">Assets per department</p>
+        {% for department, count in summary.department_counts.items() %}
+            <div class="kv">
+                <dt>{{ department }}</dt>
+                <dd>{{ count }} asset(s)</dd>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            <h2>How priorities are assigned</h2>
+        </div>
+        <p class="small text-muted">
+            Priority is derived from the risk band the model puts the asset in,
+            then escalated when more than one parameter has breached a hard limit.
+        </p>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Label</th>
+                        <th scope="col">Triggered when</th>
+                        <th scope="col">Response window</th>
+                        <th scope="col" class="num">Man-hrs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge-status s-danger">P1</span></td>
+                        <td>Emergency</td>
+                        <td class="small">Critical band and failure probability
+                            above 80%, or two or more hard limits breached</td>
+                        <td class="small">Immediate</td>
+                        <td class="num">6.0</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-status s-warning">P2</span></td>
+                        <td>Urgent</td>
+                        <td class="small">Critical band, or warning band with a
+                            hard limit breach</td>
+                        <td class="small">Within 24 hours</td>
+                        <td class="num">4.0</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-status s-amber">P3</span></td>
+                        <td>High</td>
+                        <td class="small">Warning band, no hard limit breached</td>
+                        <td class="small">Within 7 days</td>
+                        <td class="num">2.5</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-status s-info">P4</span></td>
+                        <td>Scheduled</td>
+                        <td class="small">Good band with elevated risk above 30%</td>
+                        <td class="small">Next shutdown window</td>
+                        <td class="num">1.5</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge-status s-success">P5</span></td>
+                        <td>Preventive</td>
+                        <td class="small">Excellent or Good band, nothing flagged</td>
+                        <td class="small">Routine round</td>
+                        <td class="num">0.5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

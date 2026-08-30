@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}System Control &amp; Access Center{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+            Root privileges
+        </p>
+        <h1><span class="accent">System Control</span> &amp; Access Center</h1>
+        <p>Central control panel for employee accounts, platform activity and
+           operational permissions. Every action on this screen is written to the
+           audit trail.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('main.employee_dashboard') }}">
+            <i class="fa-solid fa-helmet-safety" aria-hidden="true"></i>
+            Operations view
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('predict.cockpit') }}">
+            <i class="fa-solid fa-robot" aria-hidden="true"></i>
+            Run a prediction
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <article class="kpi kpi--primary">
+        <div class="kpi-head">
+            <span class="kpi-label">Registered users</span>
+            <span class="kpi-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ users|length }}</div>
+        <p class="kpi-foot">
+            {{ users|selectattr('active')|list|length }} active &middot;
+            {{ users|rejectattr('active')|list|length }} revoked
+        </p>
+    </article>
+
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Machines healthy</span>
+            <span class="kpi-icon"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.healthy }}<small>/{{ summary.total }}</small></div>
+        <p class="kpi-foot">
+            {{ summary.warning }} warning &middot; {{ summary.critical }} critical
+        </p>
+    </article>
+
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">Stored predictions</span>
+            <span class="kpi-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.total }}</div>
+        <p class="kpi-foot">Average health {{ stats.avg_health }}%</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Open alerts</span>
+            <span class="kpi-icon"><i class="fa-solid fa-bell" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ alert_count }}</div>
+        <p class="kpi-foot">{{ alert_total }} raised in total</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-users-gear" aria-hidden="true"></i>
+            <h2>Employee database</h2>
+            <span class="spacer"></span>
+            <small>{{ users|length }} records</small>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Accounts with platform access. Revoking an account
+                         blocks sign-in without deleting its audit history.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Employee ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Last login</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td class="mono">{{ user.user_id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td class="small text-muted">{{ user.email }}</td>
+                        <td>
+                            <span class="badge-status {{ 's-danger' if user.role == 'admin' else 's-primary' }}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td class="small">{{ user.department }}</td>
+                        <td class="small text-muted">
+                            {{ user.last_login|ago if user.last_login else 'never' }}
+                        </td>
+                        <td>
+                            <span class="badge-status {{ 's-success' if user.active else 's-muted' }}">
+                                {{ 'active' if user.active else 'revoked' }}
+                            </span>
+                        </td>
+                        <td class="right">
+                            {% if user.active %}
+                                <form method="post" style="display:inline"
+                                      action="{{ url_for('auth.revoke_user', user_id=user.user_id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button class="btn btn-sm btn-ghost" type="submit"
+                                            {% if user.user_id == current_user.user_id %}disabled
+                                            title="You cannot revoke your own session"{% endif %}>
+                                        <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
+                                        Revoke
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="post" style="display:inline"
+                                      action="{{ url_for('auth.restore_user', user_id=user.user_id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button class="btn btn-sm btn-ghost" type="submit">
+                                        <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                                        Restore
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+            <h2>Create employee account</h2>
+        </div>
+
+        <form method="post" action="{{ url_for('auth.create_user') }}"
+              autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="field">
+                <label for="new-user-id">
+                    <i class="fa-solid fa-id-badge" aria-hidden="true"></i> Employee ID
+                </label>
+                <input type="text" id="new-user-id" name="user_id" required
+                       placeholder="UT-1080" pattern="[A-Za-z0-9_.\-]{3,32}">
+            </div>
+
+            <div class="field">
+                <label for="new-name">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i> Full name
+                </label>
+                <input type="text" id="new-name" name="name" required
+                       placeholder="Shift Engineer">
+            </div>
+
+            <div class="field">
+                <label for="new-email">
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> Corporate email
+                </label>
+                <input type="email" id="new-email" name="email" required
+                       placeholder="name@ultratech.com">
+            </div>
+
+            <div class="field">
+                <label for="new-password">
+                    <i class="fa-solid fa-key" aria-hidden="true"></i> Access password
+                </label>
+                <input type="password" id="new-password" name="password" required
+                       minlength="6" placeholder="Minimum 6 characters">
+                <p class="field-hint">Stored as a PBKDF2 hash, never in clear text.</p>
+            </div>
+
+            <div class="field">
+                <label for="new-role">
+                    <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Operational role
+                </label>
+                <select id="new-role" name="role">
+                    {% for value, label in role_options %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="new-department">
+                    <i class="fa-solid fa-industry" aria-hidden="true"></i> Department
+                </label>
+                <select id="new-department" name="department">
+                    {% for department in departments|unique %}
+                        <option value="{{ department }}">{{ department }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-success btn-block" type="submit">
+                <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+                Create account
+            </button>
+        </form>
+    </section>
+</div>
+
+<div class="grid grid-wide-right mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+            <h2>Recent platform activity</h2>
+        </div>
+        <div class="stack">
+            {% for log in audit_logs %}
+                <div class="list-row l-primary">
+                    <span class="list-icon text-primary">
+                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                    </span>
+                    <span class="list-body">
+                        <strong>{{ log.action|replace('_', ' ')|title }}</strong>
+                        <span>{{ log.detail or 'No further detail.' }}</span>
+                    </span>
+                    <span class="tiny nowrap">{{ log.created_at|ago }}</span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <i class="fa-solid fa-inbox" aria-hidden="true"></i>
+                    No activity recorded yet.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel" data-refresh-seconds="{{ summary.refresh_seconds * 2 }}">
+        <div class="panel-head">
+            <i class="fa-solid fa-industry" aria-hidden="true"></i>
+            <h2>Live asset register</h2>
+            <span class="spacer"></span>
+            <small><span class="live-dot" aria-hidden="true"></span> {{ summary.refresh_seconds }}s refresh</small>
+        </div>
+        <div class="stack">
+            {% for machine in fleet %}
+                <div class="list-row l-{{ machine.colour }}">
+                    <span class="list-icon text-{{ machine.colour }}">
+                        <i class="fa-solid {{ machine.machine_icon }}" aria-hidden="true"></i>
+                    </span>
+                    <span class="list-body">
+                        <strong>{{ machine.machine_id }} &middot; {{ machine.machine_name }}</strong>
+                        <span>{{ machine.department }} &middot; health {{ machine.health_score }}%
+                              &middot; RUL {{ machine.rul_hours|num(0) }} h</span>
+                    </span>
+                    <span class="badge-status s-{{ machine.colour }}">{{ machine.status }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

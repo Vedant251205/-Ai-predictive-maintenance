@@ -1,0 +1,14 @@
+Flask==3.1.2
+Werkzeug==3.1.3
+pandas==2.3.3
+numpy==2.4.1
+scikit-learn==1.8.0
+joblib==1.5.3
+python-dotenv==1.2.1
+
+# Production WSGI server. Linux/macOS only, which is fine because the hosting
+# platform runs Linux. Local development uses `python app.py` instead.
+gunicorn==23.0.0
+
+# Optional: only needed if you set SMS_ENABLED=1 in .env
+# twilio==9.3.7

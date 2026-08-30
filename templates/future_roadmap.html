@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}Future Roadmap{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+            Platform direction
+        </p>
+        <h1><span class="accent">Future-Ready</span> Industrial AI Platform</h1>
+        <p>What is live today, what is scaffolded and ready to switch on, and what
+           comes next on the path to a full Industry 4.0 deployment.</p>
+    </div>
+    <div class="page-head-actions">
+        <button class="btn btn-primary" type="button" onclick="window.print()">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+            Print roadmap
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Assets instrumented</span>
+            <span class="kpi-icon"><i class="fa-solid fa-industry" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.total }}</div>
+        <p class="kpi-foot">Simulated telemetry, ready for real tags</p>
+    </article>
+
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">Alerts raised</span>
+            <span class="kpi-icon"><i class="fa-solid fa-bell" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ alert_total }}</div>
+        <p class="kpi-foot">Email and SMS gateways scaffolded</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Assets under 150 days RUL</span>
+            <span class="kpi-icon"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ low_rul }}</div>
+        <p class="kpi-foot">Candidates for advanced RUL modelling</p>
+    </article>
+
+    <article class="kpi kpi--purple">
+        <div class="kpi-head">
+            <span class="kpi-label">Multi-factor RUL engine</span>
+            <span class="kpi-icon"><i class="fa-solid fa-microchip" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value" style="font-size: 1.35rem;">LIVE</div>
+        <p class="kpi-foot">Wear, health and stress terms</p>
+    </article>
+</div>
+
+<div class="grid grid-3 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+            <h2>Delivered</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item done">
+                <strong>Random Forest failure classifier</strong>
+                <span>150 trees behind a ColumnTransformer, persisted with joblib.</span>
+            </div>
+            <div class="timeline-item done">
+                <strong>Short collinearity-preserving dataset</strong>
+                <span>Physically coupled synthetic telemetry with graded hazard labels.</span>
+            </div>
+            <div class="timeline-item done">
+                <strong>Health scoring and multi-factor RUL</strong>
+                <span>Documented heuristic with a visible term-by-term breakdown.</span>
+            </div>
+            <div class="timeline-item done">
+                <strong>CMMS priority engine</strong>
+                <span>P1 to P5 work orders with SLA and man-hour estimates.</span>
+            </div>
+            <div class="timeline-item done">
+                <strong>Kiln stoppage analytics</strong>
+                <span>Availability, MTBF, MTTR and a cause Pareto over 332 days.</span>
+            </div>
+            <div class="timeline-item done">
+                <strong>Role-based access and audit trail</strong>
+                <span>Admin and employee clearances, hashed credentials, CSRF guard.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-hourglass-half text-warning" aria-hidden="true"></i>
+            <h2>Scaffolded, awaiting configuration</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item next">
+                <strong>Email alert dispatch</strong>
+                <span>SMTP path implemented. Status:
+                    <span class="badge-status s-{{ gateways.email.state }}">
+                        {{ gateways.email.label }}
+                    </span>
+                </span>
+            </div>
+            <div class="timeline-item next">
+                <strong>SMS alert dispatch</strong>
+                <span>Twilio path implemented. Status:
+                    <span class="badge-status s-{{ gateways.sms.state }}">
+                        {{ gateways.sms.label }}
+                    </span>
+                </span>
+            </div>
+            <div class="timeline-item next">
+                <strong>Branding assets</strong>
+                <span>Drop logo artwork and a plant video into
+                    <span class="mono">static/</span> and the shell picks them up
+                    automatically.</span>
+            </div>
+            <div class="timeline-item next">
+                <strong>External API authentication</strong>
+                <span>The eight JSON endpoints are session-guarded; a token or
+                    mTLS scheme is needed before exposing them to SCADA.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-rocket text-info" aria-hidden="true"></i>
+            <h2>Next</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item future">
+                <strong>IoT sensor integration</strong>
+                <span>Replace the fleet simulator with MQTT or OPC-UA tag
+                    subscriptions; the service boundary is already in place.</span>
+            </div>
+            <div class="timeline-item future">
+                <strong>SCADA and DCS connectivity</strong>
+                <span>Bidirectional link so recommendations can raise work orders
+                    directly in the plant historian.</span>
+            </div>
+            <div class="timeline-item future">
+                <strong>Cloud deployment</strong>
+                <span>Containerise, move SQLite to a managed database, serve
+                    behind a real WSGI server and TLS.</span>
+            </div>
+            <div class="timeline-item future">
+                <strong>Advanced RUL prediction</strong>
+                <span>Move from heuristic to survival analysis or a gradient
+                    boosted regressor trained on run-to-failure histories.</span>
+            </div>
+            <div class="timeline-item future">
+                <strong>Industry 4.0 integration</strong>
+                <span>Digital twin view, energy optimisation and automated spare
+                    parts reordering.</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-diagram-successor" aria-hidden="true"></i>
+        <h2>From demonstrator to production</h2>
+    </div>
+    <div class="flow">
+        <span class="flow-node">Simulated fleet</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node">MQTT / OPC-UA tags</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node">Time-series store</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node">Retraining pipeline</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node">Survival-based RUL</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node">CMMS write-back</span>
+    </div>
+
+    <div class="grid grid-2 mt-16">
+        <div class="layer l-info">
+            <h3>What must change before production use</h3>
+            <ul>
+                <li>Replace the development secret key and rotate the seeded demo
+                    accounts</li>
+                <li>Serve through a production WSGI server behind TLS, not the
+                    Flask development server</li>
+                <li>Move from SQLite to a networked database if more than one
+                    process will write</li>
+                <li>Retrain on real run-to-failure data; the current model learned
+                    from synthetic hazards</li>
+                <li>Add token authentication before any machine-to-machine API use</li>
+            </ul>
+        </div>
+        <div class="layer l-purple">
+            <h3>What already transfers unchanged</h3>
+            <ul>
+                <li>The full service and blueprint structure</li>
+                <li>Health banding, RUL heuristic and the P1-P5 priority engine</li>
+                <li>Alerting, acknowledgement and the audit trail</li>
+                <li>Every dashboard, chart and JSON endpoint</li>
+                <li>Kiln availability analytics, which only needs a real export</li>
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

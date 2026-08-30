@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+            Historical intelligence
+        </p>
+        <h1><span class="accent">Fleet Analytics</span> Dashboard</h1>
+        <p>Visualises historical prediction data for trend analysis, machine
+           performance evaluation and failure pattern identification.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('main.executive_dashboard') }}">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            Executive view
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('history.export_csv') }}">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+            Export dataset
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <article class="kpi kpi--primary">
+        <div class="kpi-head">
+            <span class="kpi-label">Total predictions</span>
+            <span class="kpi-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.total }}</div>
+        <p class="kpi-foot">Stored in {{ database_name }}</p>
+    </article>
+
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Healthy machines</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.healthy }}</div>
+        <p class="kpi-foot">Excellent or Good condition</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Warning</span>
+            <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.warning }}</div>
+        <p class="kpi-foot">Degradation detected</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Failure risk</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.critical }}</div>
+        <p class="kpi-foot">Critical band predictions</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+            <h2>Live machine health index</h2>
+            <span class="spacer"></span>
+            <small><span class="live-dot" aria-hidden="true"></span>
+                   {{ summary.refresh_seconds }}s window</small>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-health" role="img"
+                    aria-label="Health score by machine"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <h2>Condition distribution</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-mix" role="img"
+                    aria-label="Fleet condition distribution"></canvas>
+        </div>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+            <h2>Prediction volume and flagged risk</h2>
+            <span class="spacer"></span>
+            <small>last 7 active days</small>
+        </div>
+        {% if volume %}
+            <div class="chart-box">
+                <canvas id="chart-volume" role="img"
+                        aria-label="Daily prediction volume against flagged risks"></canvas>
+            </div>
+        {% else %}
+            <div class="empty">
+                <i class="fa-solid fa-chart-area" aria-hidden="true"></i>
+                No prediction history yet. Run analyses from the cockpit and the
+                daily trend will build up here.
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+            <h2>What the model weighs</h2>
+            <span class="spacer"></span>
+            <a class="small" href="{{ url_for('main.feature_intelligence') }}">
+                Full breakdown
+            </a>
+        </div>
+        {% for entry in importance %}
+            <div class="bar-row">
+                <span class="bar-label">{{ entry.label }}</span>
+                <span class="meter">
+                    <span class="{{ ['cyan', 'primary', 'success', 'warning', 'purple', 'muted'][loop.index0 % 6] }}"
+                          style="width: {{ entry.pct }}%"></span>
+                </span>
+                <span class="bar-value">{{ entry.pct }}%</span>
+            </div>
+        {% endfor %}
+        <div class="divider"></div>
+        <div class="stat-inline">
+            <div>
+                <strong class="text-success">{{ metrics.accuracy }}%</strong>
+                <span>Accuracy</span>
+            </div>
+            <div>
+                <strong class="text-info">{{ metrics.f1 }}%</strong>
+                <span>F1 score</span>
+            </div>
+            <div>
+                <strong class="text-cyan">{{ metrics.roc_auc }}%</strong>
+                <span>ROC-AUC</span>
+            </div>
+            <div>
+                <strong class="text-warning">{{ metrics.recall }}%</strong>
+                <span>Recall</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+        <h2>Most recent assessments</h2>
+        <span class="spacer"></span>
+        <a class="small" href="{{ url_for('history.records') }}">Open full history</a>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Machine</th>
+                    <th scope="col" class="num">Failure prob</th>
+                    <th scope="col" class="num">Health</th>
+                    <th scope="col" class="num">RUL</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for record in recent %}
+                <tr>
+                    <td class="small nowrap">{{ record.created_at }}</td>
+                    <td>
+                        <strong class="mono">{{ record.machine_id or '-' }}</strong>
+                        <span class="small text-muted">
+                            {{ record.machine_name or 'Ad-hoc' }}
+                        </span>
+                    </td>
+                    <td class="num">{{ record.failure_prob }}%</td>
+                    <td class="num text-{{ record.status|status_colour }}">
+                        <strong>{{ record.health_score }}</strong>
+                    </td>
+                    <td class="num">{{ record.rul_hours|num(0) }} h</td>
+                    <td class="small">{{ record.action }}</td>
+                    <td>
+                        <span class="badge-status s-{{ record.status|status_colour }}">
+                            {{ record.status }}
+                        </span>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty">
+                            <i class="fa-solid fa-database" aria-hidden="true"></i>
+                            Nothing stored yet.
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var health = {{ health_series|tojson }};
+    var mix = {{ distribution|tojson }};
+    var volume = {{ volume|tojson }};
+
+    Cockpit.bars("chart-health", health.labels, health.values, health.colours, {
+        label: "Health score", max: 100
+    });
+
+    Cockpit.doughnut("chart-mix", mix.labels, mix.values,
+        ["success", "info", "warning", "danger"]);
+
+    if (volume.length) {
+        Cockpit.line(
+            "chart-volume",
+            volume.map(function (row) { return row.day; }),
+            [
+                {
+                    label: "Predictions run",
+                    token: "primary",
+                    values: volume.map(function (row) { return row.total; })
+                },
+                {
+                    label: "Flagged risk",
+                    token: "danger",
+                    values: volume.map(function (row) { return row.risks || 0; })
+                }
+            ],
+            { precision: 0 }
+        );
+    }
+})();
+</script>
+{% endblock %}

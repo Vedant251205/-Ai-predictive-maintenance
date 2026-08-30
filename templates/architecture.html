@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block title %}System Architecture{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-sitemap" aria-hidden="true"></i>
+            Technical documentation
+        </p>
+        <h1><span class="accent">System</span> Architecture</h1>
+        <p>A three-layer design: a Bootstrap front end, a Flask application
+           layer, SQLite persistence and a Random Forest inference engine. The
+           modular split keeps the platform maintainable and scalable.</p>
+    </div>
+    <div class="page-head-actions">
+        <button class="btn btn-primary" type="button" onclick="window.print()">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+            Print this page
+        </button>
+    </div>
+</div>
+
+<div class="row-gap" style="margin-bottom: 18px;">
+    {% for item in tech_stack %}
+        <span class="chip">
+            <i class="fa-solid {{ item.icon }} text-{{ item.colour }}" aria-hidden="true"></i>
+            {{ item.label }}
+        </span>
+    {% endfor %}
+</div>
+
+<section class="panel">
+    <div class="panel-head">
+        <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>
+        <h2>Request and data flow</h2>
+    </div>
+    <div class="flow">
+        <span class="flow-node"><i class="fa-solid fa-desktop" aria-hidden="true"></i> Browser</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-route" aria-hidden="true"></i> Flask blueprint</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Validator</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-gears" aria-hidden="true"></i> ColumnTransformer</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-tree" aria-hidden="true"></i> Random Forest</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-calculator" aria-hidden="true"></i> Health + RUL</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-database" aria-hidden="true"></i> SQLite</span>
+        <span class="flow-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        <span class="flow-node"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Jinja2 + Chart.js</span>
+    </div>
+</section>
+
+<div class="grid grid-3 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-window-maximize" aria-hidden="true"></i>
+            <h2>Presentation layer</h2>
+        </div>
+        <div class="layer l-info">
+            <h3>Front end</h3>
+            <p>Server-rendered pages with progressive enhancement. No build step.</p>
+            <ul>
+                <li>HTML5 semantic markup, skip links, ARIA labelling</li>
+                <li>Bootstrap 5 grid utilities over a custom dark SCADA theme</li>
+                <li>Chart.js 4 for every visualisation, one shared theme module</li>
+                <li>Font Awesome 6 iconography</li>
+                <li>Jinja2 templates: one base shell, four partials, thirteen pages</li>
+                <li>Live clock, collapsible sidebar, persistent backdrop</li>
+                <li>Reduced-motion and print stylesheets</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-server" aria-hidden="true"></i>
+            <h2>Application layer</h2>
+        </div>
+        <div class="layer l-success">
+            <h3>Flask 3.1 factory</h3>
+            <p>Blueprints keep routing thin; services hold the logic.</p>
+            <ul>
+                <li><span class="mono">app.py</span> application factory, CSRF guard,
+                    error handlers</li>
+                <li><span class="mono">config.py</span> single source for brand,
+                    thresholds, fleet and paths</li>
+                <li><span class="mono">routes/</span> auth, main, predict, history, api</li>
+                <li><span class="mono">services/</span> database, ml, prediction, fleet,
+                    alert, kiln, chatbot</li>
+                <li><span class="mono">utils/</span> validators, formatters,
+                    recommendations</li>
+                <li>Eight JSON endpoints under <span class="mono">/api</span></li>
+                <li>Role-based sessions, PBKDF2 password hashing, audit trail</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-brain" aria-hidden="true"></i>
+            <h2>Intelligence layer</h2>
+        </div>
+        <div class="layer l-danger">
+            <h3>{{ card.algorithm }}</h3>
+            <p>{{ card.n_estimators }} trees, max depth {{ card.max_depth }},
+               inside a {{ card.preprocessor }}.</p>
+            <ul>
+                <li>Five numeric sensor channels plus machine class</li>
+                <li>StandardScaler on numerics, OneHotEncoder on the class</li>
+                <li>Binary target: will this asset fail</li>
+                <li>Health score = 100 - failure probability</li>
+                <li>RUL from a documented multi-factor degradation heuristic</li>
+                <li>Persisted with joblib, metadata published as JSON</li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-database" aria-hidden="true"></i>
+            <h2>Persistence</h2>
+        </div>
+        <p class="small text-muted">
+            One SQLite file, <span class="mono">{{ database_name }}</span>, holds
+            everything the platform needs to remember. Every statement is
+            parameterised.
+        </p>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Table</th>
+                        <th scope="col">Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono">users</td>
+                        <td class="small">Role-based accounts, PBKDF2 hashes,
+                            activation state, last login</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">predictions</td>
+                        <td class="small">Every assessment with its full sensor
+                            reading and derived outputs</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">alerts</td>
+                        <td class="small">Warning and critical events with
+                            acknowledgement state</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">alert_settings</td>
+                        <td class="small">Single-row notification gateway
+                            configuration</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">audit_logs</td>
+                        <td class="small">Who did what, and when</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-code" aria-hidden="true"></i>
+            <h2>REST endpoints</h2>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Method</th>
+                        <th scope="col">Endpoint</th>
+                        <th scope="col">Returns</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="mono">GET</td><td class="mono">/api/machines</td><td class="small">Monitored asset register</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/fleet-status</td><td class="small">Live per-machine assessment</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/predictions</td><td class="small">Stored prediction archive</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/alerts</td><td class="small">Stored alerts and counters</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/kpis</td><td class="small">Dashboard KPI block and trends</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/kiln-stats</td><td class="small">Kiln availability analytics</td></tr>
+                    <tr><td class="mono">GET</td><td class="mono">/api/feature-importance</td><td class="small">Model card, metrics, collinearity</td></tr>
+                    <tr><td class="mono">POST</td><td class="mono">/api/chat</td><td class="small">Plant assistant reply</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="field-hint" style="margin-top: 10px;">
+            All endpoints require an authenticated session. A production SCADA or
+            IoT integration would need token or mTLS authentication instead of
+            browser cookies.
+        </p>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-flask-vial" aria-hidden="true"></i>
+            <h2>Training data</h2>
+        </div>
+        <dl style="margin: 0;">
+            <div class="kv"><dt>Source</dt><dd>Synthetic, generated in repo</dd></div>
+            <div class="kv"><dt>Readings</dt><dd>{{ card.dataset_rows }}</dd></div>
+            <div class="kv"><dt>Failure prevalence</dt><dd>{{ card.positive_rate_pct }}%</dd></div>
+            <div class="kv"><dt>Train / test</dt><dd>{{ card.train_rows }} / {{ card.test_rows }}</dd></div>
+            <div class="kv"><dt>Monitored assets</dt><dd>{{ machine_count }}</dd></div>
+            <div class="kv"><dt>Trained at</dt><dd class="small">{{ card.trained_at }}</dd></div>
+        </dl>
+        <p class="small text-muted" style="margin-top: 12px;">
+            The dataset is deliberately short but preserves the physical
+            collinearity of real telemetry: ambient heat propagates into the
+            process, and torque and speed are two views of the same delivered
+            power. See
+            <a href="{{ url_for('main.feature_intelligence') }}">AI Feature
+            Intelligence</a> for the full audit.
+        </p>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+            <h2>Held-out performance</h2>
+        </div>
+        <div class="stat-inline">
+            <div><strong class="text-success">{{ metrics.accuracy }}%</strong><span>Accuracy</span></div>
+            <div><strong class="text-info">{{ metrics.precision }}%</strong><span>Precision</span></div>
+            <div><strong class="text-warning">{{ metrics.recall }}%</strong><span>Recall</span></div>
+            <div><strong class="text-cyan">{{ metrics.f1 }}%</strong><span>F1</span></div>
+            <div><strong class="text-purple">{{ metrics.roc_auc }}%</strong><span>ROC-AUC</span></div>
+        </div>
+        <div class="divider"></div>
+        <p class="tiny">Feature importance</p>
+        {% for entry in importance %}
+            <div class="bar-row">
+                <span class="bar-label">{{ entry.label }}</span>
+                <span class="meter">
+                    <span class="{{ ['cyan', 'primary', 'success', 'warning', 'purple', 'muted'][loop.index0 % 6] }}"
+                          style="width: {{ entry.pct }}%"></span>
+                </span>
+                <span class="bar-value">{{ entry.pct }}%</span>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+# Render blueprint. With this file in the repository root of the service,
+# Render can configure the whole deployment automatically.
+#
+# The build step generates the datasets and trains the model on the server, so
+# no large binary artefacts need to be committed to git. Generation is seeded,
+# so the deployed model is byte-for-byte the same one verified locally.
+
+services:
+  - type: web
+    name: ai-predictive-maintenance
+    runtime: python
+    plan: free
+    region: singapore          # closest free region to India
+    branch: main
+    buildCommand: >-
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      python scripts/generate_synthetic_dataset.py &&
+      python scripts/generate_kiln_dataset.py &&
+      python scripts/train_model.py
+    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /login
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.13.1
+      - key: FLASK_DEBUG
+        value: 0
+      - key: EMAIL_ENABLED
+        value: 0
+      - key: SMS_ENABLED
+        value: 0
+      # Render generates a strong random value and keeps it stable.
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      # Set these in the Render dashboard. The app refuses to start in
+      # production while they are still the documented demo passwords.
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: EMPLOYEE_PASSWORD
+        sync: false

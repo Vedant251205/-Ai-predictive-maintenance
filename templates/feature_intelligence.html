@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% block title %}AI Feature Intelligence{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>
+            Model transparency
+        </p>
+        <h1><span class="accent">AI Feature</span> Intelligence</h1>
+        <p>What the Random Forest actually learned: which sensor channels carry
+           the predictive signal, how the model scores on held-out data, and the
+           collinearity structure preserved inside the training set.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('api.feature_importance') }}">
+            <i class="fa-solid fa-code" aria-hidden="true"></i>
+            JSON feed
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('predict.cockpit') }}">
+            <i class="fa-solid fa-robot" aria-hidden="true"></i>
+            Try the model
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-5">
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Accuracy</span>
+            <span class="kpi-icon"><i class="fa-solid fa-bullseye" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.accuracy }}<small>%</small></div>
+        <p class="kpi-foot">{{ card.test_rows }} held-out readings</p>
+    </article>
+
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">Precision</span>
+            <span class="kpi-icon"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.precision }}<small>%</small></div>
+        <p class="kpi-foot">Of flagged failures, how many were real</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Recall</span>
+            <span class="kpi-icon"><i class="fa-solid fa-magnet" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.recall }}<small>%</small></div>
+        <p class="kpi-foot">Of real failures, how many were caught</p>
+    </article>
+
+    <article class="kpi kpi--cyan">
+        <div class="kpi-head">
+            <span class="kpi-label">F1 score</span>
+            <span class="kpi-icon"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.f1 }}<small>%</small></div>
+        <p class="kpi-foot">CV {{ metrics.cv_f1_mean }}% +/- {{ metrics.cv_f1_std }}%</p>
+    </article>
+
+    <article class="kpi kpi--purple">
+        <div class="kpi-head">
+            <span class="kpi-label">ROC-AUC</span>
+            <span class="kpi-icon"><i class="fa-solid fa-chart-area" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.roc_auc }}<small>%</small></div>
+        <p class="kpi-foot">Ranking quality across thresholds</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+            <h2>Feature importance</h2>
+            <span class="spacer"></span>
+            <small>impurity-based, one-hot columns folded back</small>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-importance" role="img"
+                    aria-label="Feature importance percentages"></canvas>
+        </div>
+        <div class="divider"></div>
+        {% for entry in importance %}
+            <div class="bar-row">
+                <span class="bar-label">{{ entry.label }}</span>
+                <span class="meter">
+                    <span class="{{ ['cyan', 'primary', 'success', 'warning', 'purple', 'muted'][loop.index0 % 6] }}"
+                          style="width: {{ entry.pct }}%"></span>
+                </span>
+                <span class="bar-value">{{ entry.pct }}%</span>
+            </div>
+        {% endfor %}
+        <p class="small text-muted" style="margin-top: 10px;">
+            Torque and rotational speed lead because together they determine
+            delivered mechanical power, which is the most frequent failure mode
+            in the training data. Tool wear follows as the dominant slow
+            degradation channel.
+        </p>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-radar" aria-hidden="true"></i>
+            <h2>Signal profile</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-radar" role="img"
+                    aria-label="Feature importance radar"></canvas>
+        </div>
+        <div class="divider"></div>
+        <p class="tiny">Permutation importance (F1 drop when shuffled)</p>
+        {% for key, value in permutation.items() %}
+            <div class="bar-row">
+                <span class="bar-label">{{ labels[key] }}</span>
+                <span class="meter sm">
+                    <span class="info" style="width: {{ value }}%"></span>
+                </span>
+                <span class="bar-value">{{ value }}%</span>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+
+<!-- ======================================================== collinearity -->
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-link" aria-hidden="true"></i>
+        <h2>Collinearity audit of the synthetic dataset</h2>
+        <span class="spacer"></span>
+        <small>{{ card.dataset_rows }} readings &middot;
+               {{ card.positive_rate_pct }}% failures</small>
+    </div>
+
+    <p class="small text-muted">
+        A naive generator draws every sensor column independently, which destroys
+        the physical structure of real industrial telemetry and produces a model
+        whose feature importances are meaningless. This dataset is short on
+        purpose but keeps the real dependencies intact, so the classifier learns
+        genuine mechanical relationships rather than noise.
+    </p>
+
+    <div class="grid grid-3 mt-16">
+        {% for item in collinearity.preserved_relationships %}
+            <div class="layer l-{{ 'success' if item.observed_r > 0 else 'danger' }}">
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.pair }}</p>
+                <div class="stat-inline" style="border: none; padding: 0; background: none;">
+                    <div>
+                        <strong class="{{ 'text-success' if item.observed_r > 0 else 'text-danger' }}">
+                            {{ '%+.3f'|format(item.observed_r) }}
+                        </strong>
+                        <span>Pearson r</span>
+                    </div>
+                    <div>
+                        <strong class="text-muted" style="font-size: .9rem;">
+                            {{ item.expected }}
+                        </strong>
+                        <span>Expected</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="grid grid-wide-left mt-16">
+        <div>
+            <p class="tiny">Correlation matrix of the five numeric sensor channels</p>
+            <div class="table-wrap">
+                <table class="matrix">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            {% for label in collinearity.correlation_labels %}
+                                <th scope="col">{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in collinearity.correlation_matrix %}
+                        <tr>
+                            <th scope="row" class="row-head">
+                                {{ collinearity.correlation_labels[loop.index0] }}
+                            </th>
+                            {% for value in row %}
+                                {% set magnitude = (value|abs * 0.5)|round(3) %}
+                                <td style="background: {{ 'rgba(34,211,238,' ~ magnitude ~ ')' if value >= 0 else 'rgba(255,66,87,' ~ magnitude ~ ')' }};">
+                                    {{ '%+.2f'|format(value) }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="small text-dim" style="margin-top: 8px;">
+                Cyan cells are positive correlation, red are negative. Intensity
+                tracks magnitude.
+            </p>
+        </div>
+
+        <div>
+            <p class="tiny">Variance inflation factor per channel</p>
+            {% for key, value in collinearity.vif.items() %}
+                <div class="bar-row">
+                    <span class="bar-label">{{ labels[key] }}</span>
+                    <span class="meter">
+                        <span class="{{ 'warning' if value >= 5 else 'success' }}"
+                              style="width: {{ [value / 10 * 100, 100]|min }}%"></span>
+                    </span>
+                    <span class="bar-value">{{ value }}</span>
+                </div>
+            {% endfor %}
+            <p class="small text-muted" style="margin-top: 10px;">
+                VIF measures how much of a channel is explained by the others.
+                A value of 1.0 means fully independent. Values above 2 confirm
+                that shared physical information survived generation, which is
+                exactly what real plant telemetry looks like.
+            </p>
+
+            <div class="divider"></div>
+            <p class="tiny">Confusion matrix on held-out data</p>
+            <dl style="margin: 0;">
+                <div class="kv">
+                    <dt>True negative (correctly healthy)</dt>
+                    <dd class="text-success">{{ confusion.true_negative }}</dd>
+                </div>
+                <div class="kv">
+                    <dt>True positive (failure caught)</dt>
+                    <dd class="text-success">{{ confusion.true_positive }}</dd>
+                </div>
+                <div class="kv">
+                    <dt>False positive (false alarm)</dt>
+                    <dd class="text-warning">{{ confusion.false_positive }}</dd>
+                </div>
+                <div class="kv">
+                    <dt>False negative (missed failure)</dt>
+                    <dd class="text-danger">{{ confusion.false_negative }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</section>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-microchip" aria-hidden="true"></i>
+            <h2>Model card</h2>
+        </div>
+        <dl style="margin: 0;">
+            <div class="kv"><dt>Algorithm</dt><dd>{{ card.algorithm }}</dd></div>
+            <div class="kv"><dt>Trees</dt><dd>{{ card.n_estimators }}</dd></div>
+            <div class="kv"><dt>Max depth</dt><dd>{{ card.max_depth }}</dd></div>
+            <div class="kv"><dt>Preprocessor</dt><dd class="small">{{ card.preprocessor }}</dd></div>
+            <div class="kv"><dt>Dataset rows</dt><dd>{{ card.dataset_rows }}</dd></div>
+            <div class="kv"><dt>Train / test split</dt><dd>{{ card.train_rows }} / {{ card.test_rows }}</dd></div>
+            <div class="kv"><dt>Failure prevalence</dt><dd>{{ card.positive_rate_pct }}%</dd></div>
+            <div class="kv"><dt>Trained at</dt><dd class="small">{{ card.trained_at }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-bugs" aria-hidden="true"></i>
+            <h2>Physical failure modes in the training data</h2>
+        </div>
+        <p class="small text-muted">
+            Labels are produced by graded physical hazards, not a coin flip. Each
+            counter below is the number of readings where that hazard was
+            materially active.
+        </p>
+        {% set mode_names = {
+            'twf_tool_wear': 'Tool wear failure',
+            'hdf_heat_dissipation': 'Heat dissipation failure',
+            'pwf_power': 'Power envelope failure',
+            'osf_overstrain': 'Overstrain (wear x torque)',
+            'osp_overspeed': 'Bearing overspeed',
+            'tol_torque_overload': 'Torque overload'
+        } %}
+        {% for key, value in failure_modes.items() %}
+            <div class="bar-row">
+                <span class="bar-label">{{ mode_names.get(key, key) }}</span>
+                <span class="meter">
+                    <span class="{{ ['danger', 'warning', 'amber', 'purple', 'info', 'cyan'][loop.index0 % 6] }}"
+                          style="width: {{ [value / 2, 100]|min }}%"></span>
+                </span>
+                <span class="bar-value">{{ value }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="divider"></div>
+        <p class="tiny">Operating envelopes enforced by the cockpit</p>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Channel</th>
+                        <th scope="col" class="num">Hard min</th>
+                        <th scope="col" class="num">Normal band</th>
+                        <th scope="col" class="num">Hard max</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for field, bounds in ranges.items() %}
+                    <tr>
+                        <td class="small">{{ labels[field] }}</td>
+                        <td class="num">{{ bounds.min }}</td>
+                        <td class="num text-success">
+                            {{ bounds.normal_min }} - {{ bounds.normal_max }}
+                        </td>
+                        <td class="num">{{ bounds.max }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var importance = {{ importance|tojson }};
+    var labels = importance.map(function (row) { return row.label; });
+    var values = importance.map(function (row) { return row.pct; });
+
+    Cockpit.bars("chart-importance", labels, values,
+        ["cyan", "primary", "success", "warning", "purple", "muted"],
+        { label: "Importance %", horizontal: true, thickness: 22 });
+
+    Cockpit.radar("chart-radar", labels, values, "cyan");
+})();
+</script>
+{% endblock %}

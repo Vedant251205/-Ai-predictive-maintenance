@@ -1,0 +1,44 @@
+<button class="chat-fab" id="chat-fab" type="button"
+        aria-controls="chat-window" aria-expanded="false"
+        aria-label="Open the plant assistant">
+    <i class="fa-solid fa-robot" aria-hidden="true"></i>
+    <span class="dot">1</span>
+</button>
+
+<section class="chat-window" id="chat-window" aria-label="Plant assistant">
+    <div class="chat-head">
+        <span class="avatar" aria-hidden="true">
+            <i class="fa-solid fa-robot"></i>
+        </span>
+        <span class="chat-title">
+            <strong>Plant Assistant</strong>
+            <span><span class="live-dot" aria-hidden="true"></span> Connected to live data</span>
+        </span>
+        <button class="btn btn-sm btn-ghost" id="chat-close" type="button"
+                aria-label="Close the assistant">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <div class="chat-body" id="chat-body">
+        <div class="bubble bot">Plant assistant online. I read live fleet telemetry, the trained model card and kiln analytics. Ask me anything, or tap a suggestion below.</div>
+    </div>
+
+    <div class="chat-chips">
+        <button class="chat-chip" type="button">Fleet status</button>
+        <button class="chat-chip" type="button">Which machines are critical?</button>
+        <button class="chat-chip" type="button">How accurate is the model?</button>
+        <button class="chat-chip" type="button">What drives failures?</button>
+        <button class="chat-chip" type="button">Kiln downtime</button>
+        <button class="chat-chip" type="button">Explain RUL</button>
+    </div>
+
+    <form class="chat-foot" id="chat-form">
+        <label class="visually-hidden" for="chat-input">Message</label>
+        <input type="text" id="chat-input" autocomplete="off"
+               placeholder="Ask about a machine, the model or the kiln...">
+        <button class="btn btn-primary btn-sm" type="submit" aria-label="Send">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+        </button>
+    </form>
+</section>

@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% block title %}Alert Center{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+            Condition monitoring
+        </p>
+        <h1><span class="accent">Intelligent</span> Alert Center</h1>
+        <p>Continuously monitors machine condition and raises critical and
+           warning alerts, so engineers are notified before a fault becomes a
+           failure.</p>
+    </div>
+    <div class="page-head-actions">
+        <form method="post" action="{{ url_for('main.scan_alerts') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-primary" type="submit">
+                <i class="fa-solid fa-radar" aria-hidden="true"></i>
+                Run fleet scan
+            </button>
+        </form>
+        <form method="post" action="{{ url_for('main.acknowledge_alerts') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-ghost" type="submit">
+                <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+                Acknowledge all
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Critical anomalies</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.stored_critical }}</div>
+        <p class="kpi-foot">{{ summary.live_critical }} live on the fleet now</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Warning alerts</span>
+            <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.stored_warning }}</div>
+        <p class="kpi-foot">{{ summary.live_warning }} live on the fleet now</p>
+    </article>
+
+    <article class="kpi kpi--{{ gateways.email.state if gateways.email.state != 'muted' else 'muted' }}">
+        <div class="kpi-head">
+            <span class="kpi-label">Email dispatcher</span>
+            <span class="kpi-icon"><i class="fa-solid fa-envelope" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value" style="font-size: 1.35rem;">
+            {{ gateways.email.label }}
+        </div>
+        <p class="kpi-foot">{{ gateways.email.host }}:{{ gateways.email.port }}</p>
+    </article>
+
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">Audit log entries</span>
+            <span class="kpi-icon"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.audit_count }}</div>
+        <p class="kpi-foot">{{ summary.unacknowledged }} alert(s) unacknowledged</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+            <h2>Live fleet condition</h2>
+            <span class="spacer"></span>
+            <small><span class="live-dot" aria-hidden="true"></span> monitoring
+                   {{ fleet|length }} assets</small>
+        </div>
+        <div class="stack">
+            {% for machine in fleet if machine.status in ['Warning', 'Critical'] %}
+                <div class="list-row l-{{ machine.colour }}">
+                    <span class="list-icon text-{{ machine.colour }}">
+                        <i class="fa-solid {{ machine.machine_icon }}" aria-hidden="true"></i>
+                    </span>
+                    <span class="list-body">
+                        <strong>{{ machine.machine_id }} &middot; {{ machine.machine_name }}
+                            &mdash; health {{ machine.health_score }}%</strong>
+                        <span>
+                            {% if machine.drivers %}
+                                {{ machine.drivers[0].message }}
+                            {% else %}
+                                Failure probability {{ machine.failure_prob }}% with no
+                                single parameter outside its envelope.
+                            {% endif %}
+                        </span>
+                    </span>
+                    <span class="badge-status s-{{ machine.colour }}">{{ machine.status }}</span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <i class="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+                    Every monitored asset is inside its healthy band.
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="divider"></div>
+        <p class="tiny">Alert thresholds in force</p>
+        <dl style="margin: 0;">
+            <div class="kv">
+                <dt>Critical health score below</dt>
+                <dd>{{ thresholds.critical_health }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Warning health score below</dt>
+                <dd>{{ thresholds.warning_health }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Critical failure probability above</dt>
+                <dd>{{ thresholds.critical_failure_prob }}%</dd>
+            </div>
+            <div class="kv">
+                <dt>Tool wear limit</dt>
+                <dd>{{ thresholds.critical_tool_wear }} min</dd>
+            </div>
+            <div class="kv">
+                <dt>Minimum thermal gap</dt>
+                <dd>{{ thresholds.min_thermal_delta }} K</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+            <h2>Notification gateways</h2>
+        </div>
+
+        <form method="post" action="{{ url_for('main.save_alert_settings') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="switch-row">
+                <span class="switch">
+                    <input type="checkbox" id="email_enabled" name="email_enabled"
+                           {% if gateways.settings.email_enabled %}checked{% endif %}>
+                    <span class="track"></span>
+                </span>
+                <span class="switch-meta">
+                    <strong><label for="email_enabled">Email alerts</label></strong>
+                    <span>SMTP via {{ gateways.email.host }} &middot;
+                          sender {{ gateways.email.sender }}</span>
+                </span>
+                <span class="badge-status s-{{ gateways.email.state }}">
+                    {{ gateways.email.label }}
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="recipient_email">
+                    <i class="fa-solid fa-at" aria-hidden="true"></i> Recipient email
+                </label>
+                <input type="email" id="recipient_email" name="recipient_email"
+                       value="{{ gateways.settings.recipient_email }}"
+                       placeholder="maintenance.head@ultratech.com">
+            </div>
+
+            <div class="switch-row">
+                <span class="switch">
+                    <input type="checkbox" id="sms_enabled" name="sms_enabled"
+                           {% if gateways.settings.sms_enabled %}checked{% endif %}>
+                    <span class="track"></span>
+                </span>
+                <span class="switch-meta">
+                    <strong><label for="sms_enabled">SMS alerts</label></strong>
+                    <span>Twilio &middot; from {{ gateways.sms.from_number }}</span>
+                </span>
+                <span class="badge-status s-{{ gateways.sms.state }}">
+                    {{ gateways.sms.label }}
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="recipient_phone">
+                    <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                    Recipient phone
+                </label>
+                <input type="tel" id="recipient_phone" name="recipient_phone"
+                       value="{{ gateways.settings.recipient_phone }}"
+                       placeholder="+91 90000 00000">
+            </div>
+
+            <div class="field">
+                <label for="severity">
+                    <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                    Severity threshold
+                </label>
+                <select id="severity" name="severity">
+                    {% for value, label in severity_options %}
+                        <option value="{{ value }}"
+                            {% if gateways.settings.severity == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <p class="field-hint">
+                    Alerts below this level are recorded in the platform but not
+                    dispatched.
+                </p>
+            </div>
+
+            <button class="btn btn-success btn-block" type="submit">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Save gateway settings
+            </button>
+        </form>
+
+        <div class="divider"></div>
+        <form method="post" action="{{ url_for('main.test_alert') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-ghost btn-block" type="submit">
+                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                Send a test notification
+            </button>
+        </form>
+        <p class="field-hint" style="margin-top: 8px;">
+            Both gateways stay in simulated mode until real credentials are
+            present in <code class="mono">.env</code>. Nothing is transmitted
+            without them.
+        </p>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-circle-exclamation text-danger" aria-hidden="true"></i>
+            <h2>Critical alert log</h2>
+            <span class="spacer"></span>
+            <form method="post" action="{{ url_for('main.acknowledge_alerts') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="severity" value="critical">
+                <button class="btn btn-sm btn-ghost" type="submit">
+                    Acknowledge critical
+                </button>
+            </form>
+        </div>
+        <div class="stack">
+            {% for alert in critical_alerts %}
+                <div class="list-row l-danger">
+                    <span class="list-body">
+                        <strong>{{ alert.title }}</strong>
+                        <span>{{ alert.message }}</span>
+                    </span>
+                    <span class="right">
+                        <span class="badge-status {{ 's-success' if alert.acknowledged else 's-danger' }}">
+                            {{ 'acked' if alert.acknowledged else 'open' }}
+                        </span><br>
+                        <span class="tiny nowrap">{{ alert.created_at|ago }}</span>
+                    </span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <i class="fa-solid fa-shield-halved text-success" aria-hidden="true"></i>
+                    No critical alerts recorded.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-triangle-exclamation text-warning" aria-hidden="true"></i>
+            <h2>Warning alert log</h2>
+            <span class="spacer"></span>
+            <form method="post" action="{{ url_for('main.acknowledge_alerts') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="severity" value="warning">
+                <button class="btn btn-sm btn-ghost" type="submit">
+                    Acknowledge warnings
+                </button>
+            </form>
+        </div>
+        <div class="stack">
+            {% for alert in warning_alerts %}
+                <div class="list-row l-warning">
+                    <span class="list-body">
+                        <strong>{{ alert.title }}</strong>
+                        <span>{{ alert.message }}</span>
+                    </span>
+                    <span class="right">
+                        <span class="badge-status {{ 's-success' if alert.acknowledged else 's-warning' }}">
+                            {{ 'acked' if alert.acknowledged else 'open' }}
+                        </span><br>
+                        <span class="tiny nowrap">{{ alert.created_at|ago }}</span>
+                    </span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <i class="fa-solid fa-bell-slash" aria-hidden="true"></i>
+                    No warning alerts recorded.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+        <h2>Platform audit trail</h2>
+        <span class="spacer"></span>
+        <small>{{ summary.audit_count }} entries recorded</small>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Actor</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for log in audit_logs %}
+                <tr>
+                    <td class="small nowrap">{{ log.created_at }}</td>
+                    <td class="mono small">{{ log.actor }}</td>
+                    <td>
+                        <span class="badge-status s-primary">
+                            {{ log.action|replace('_', ' ') }}
+                        </span>
+                    </td>
+                    <td class="small text-muted">{{ log.detail }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty">
+                            <i class="fa-solid fa-inbox" aria-hidden="true"></i>
+                            No audit entries yet.
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

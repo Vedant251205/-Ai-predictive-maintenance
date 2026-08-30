@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Secure Gateway{% endblock %}
+
+{% block bare %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-logos">
+            {% if assets.primary_logo %}
+                <img class="logo-img"
+                     src="{{ url_for('static', filename=brand.primary_logo_file) }}"
+                     alt="{{ brand.organisation }} logo">
+            {% else %}
+                <span class="wordmark">{{ brand.primary_logo_text }}
+                    <span>{{ brand.primary_logo_sub }}</span>
+                </span>
+            {% endif %}
+            {% if assets.secondary_logo %}
+                <img class="logo-img"
+                     src="{{ url_for('static', filename=brand.secondary_logo_file) }}"
+                     alt="{{ brand.group }} logo">
+            {% else %}
+                <span class="wordmark wordmark--group">{{ brand.secondary_logo_text }}</span>
+            {% endif %}
+        </div>
+
+        <p class="tag" style="margin-inline: auto;">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            [ Secure Gateway ]
+        </p>
+
+        <h1>{{ brand.console_name }}</h1>
+        <p class="sub">{{ brand.organisation }} &middot; {{ brand.group }}</p>
+
+        <div class="clearance">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>Authorised personnel only. Every sign-in attempt is written to
+                  the platform audit log.</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Clearance level">
+            <a class="tab {% if role == 'admin' %}active{% endif %}"
+               role="tab" aria-selected="{{ 'true' if role == 'admin' else 'false' }}"
+               href="{{ url_for('auth.login', role='admin') }}">
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administrator
+            </a>
+            <a class="tab {% if role == 'employee' %}active{% endif %}"
+               role="tab" aria-selected="{{ 'true' if role == 'employee' else 'false' }}"
+               href="{{ url_for('auth.login', role='employee') }}">
+                <i class="fa-solid fa-helmet-safety" aria-hidden="true"></i> Employee
+            </a>
+        </div>
+
+        <form method="post" action="{{ url_for('auth.login', role=role) }}"
+              autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="role" value="{{ role }}">
+
+            <div class="field">
+                <label for="email">
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                    {{ 'Admin email' if role == 'admin' else 'Corporate email' }}
+                </label>
+                <input type="email" id="email" name="email" required
+                       placeholder="name@ultratech.com">
+            </div>
+
+            <div class="field">
+                <label for="user_id">
+                    <i class="fa-solid fa-id-badge" aria-hidden="true"></i>
+                    {{ 'System admin ID' if role == 'admin' else 'Employee ID' }}
+                </label>
+                <input type="text" id="user_id" name="user_id" required
+                       placeholder="{{ 'admin' if role == 'admin' else 'UT-1042' }}">
+            </div>
+
+            <div class="field">
+                <label for="password">
+                    <i class="fa-solid fa-key" aria-hidden="true"></i>
+                    Access password
+                </label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Enter access password">
+            </div>
+
+            <button class="btn btn-primary btn-block" type="submit">
+                <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
+                Authenticate
+            </button>
+        </form>
+
+        <div class="login-foot">
+            {% if show_demo_keys %}
+                <button class="btn btn-sm btn-ghost" type="button" id="demo-key">
+                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    Load demo access key
+                </button>
+            {% endif %}
+            <p style="margin: 10px 0 0;">
+                {{ brand.project_title }} &middot; Random Forest engine online
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if show_demo_keys %}
+<script>
+(function () {
+    var keys = {{ demo_keys|tojson }};
+    var role = {{ role|tojson }};
+    var button = document.getElementById("demo-key");
+    if (!button) return;
+
+    button.addEventListener("click", function () {
+        var key = keys[role];
+        if (!key) return;
+        document.getElementById("email").value = key.email;
+        document.getElementById("user_id").value = key.user_id;
+        document.getElementById("password").value = key.password;
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

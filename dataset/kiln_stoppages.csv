@@ -1,0 +1,52 @@
+stoppage_id,unit,start_time,end_time,duration_hours,cause_category,section,responsible_department,shift,planned,production_loss_tonnes,month
+STP-001,U1KILN,2025-05-07 08:04:58,2025-05-07 10:42:10,2.62,Instrumentation Fault,Calciner,Instrumentation,A (06:00-14:00),0,374.6,2025-05
+STP-002,U1KILN,2025-05-15 07:10:47,2025-05-16 13:43:11,30.54,Refractory / Coating Failure,Kiln Feed System,Mechanical,A (06:00-14:00),0,4610.6,2025-05
+STP-003,U1KILN,2025-05-21 03:50:45,2025-05-22 09:55:33,30.08,Electrical Fault,Calciner,Electrical,C (22:00-06:00),0,4138.9,2025-05
+STP-004,U1KILN,2025-05-24 17:33:28,2025-05-25 01:08:52,7.59,Mechanical Breakdown,Calciner,Mechanical,B (14:00-22:00),0,1009.8,2025-05
+STP-005,U1KILN,2025-05-31 15:23:46,2025-06-01 09:37:34,18.23,Refractory / Coating Failure,Preheater Tower,Mechanical,B (14:00-22:00),0,2429.5,2025-05
+STP-006,U1KILN,2025-06-10 05:05:23,2025-06-10 09:16:11,4.18,Process Upset,Kiln Shell / Refractory,Operations,C (22:00-06:00),0,625.6,2025-06
+STP-007,U1KILN,2025-06-12 02:05:10,2025-06-12 11:42:22,9.62,Electrical Fault,ID Fan,Electrical,C (22:00-06:00),0,1259.5,2025-06
+STP-008,U1KILN,2025-06-22 22:51:25,2025-06-23 14:44:13,15.88,Planned Preventive Halt,ID Fan,Maintenance,C (22:00-06:00),1,2261.1,2025-06
+STP-009,U1KILN,2025-06-29 07:59:50,2025-06-29 12:01:38,4.03,Instrumentation Fault,Instrumentation Loop,Instrumentation,A (06:00-14:00),0,573.0,2025-06
+STP-010,U1KILN,2025-07-04 02:03:58,2025-07-04 09:15:58,7.2,Instrumentation Fault,Burner / Firing System,Instrumentation,C (22:00-06:00),0,1034.5,2025-07
+STP-011,U1KILN,2025-07-09 17:10:31,2025-07-09 23:34:31,6.4,Instrumentation Fault,Clinker Cooler,Instrumentation,B (14:00-22:00),0,964.7,2025-07
+STP-012,U1KILN,2025-07-16 02:15:29,2025-07-16 05:17:17,3.03,Fan / Blower Trip,Calciner,Electrical,C (22:00-06:00),0,421.7,2025-07
+STP-013,U1KILN,2025-07-22 11:28:32,2025-07-23 13:30:56,26.04,Refractory / Coating Failure,Calciner,Mechanical,A (06:00-14:00),0,3726.9,2025-07
+STP-014,U1KILN,2025-07-30 00:04:43,2025-07-30 07:14:19,7.16,Electrical Fault,Kiln Main Drive,Electrical,C (22:00-06:00),0,949.4,2025-07
+STP-015,U1KILN,2025-08-05 19:55:59,2025-08-06 02:30:47,6.58,Mechanical Breakdown,Kiln Feed System,Mechanical,B (14:00-22:00),0,907.4,2025-08
+STP-016,U1KILN,2025-08-12 14:26:22,2025-08-12 22:42:34,8.27,Electrical Fault,Kiln Shell / Refractory,Electrical,B (14:00-22:00),0,1208.5,2025-08
+STP-017,U1KILN,2025-08-21 11:18:04,2025-08-22 02:57:04,15.65,Refractory / Coating Failure,Kiln Feed System,Mechanical,A (06:00-14:00),0,2274.5,2025-08
+STP-018,U1KILN,2025-08-26 21:33:00,2025-08-28 07:12:36,33.66,Planned Preventive Halt,ID Fan,Maintenance,B (14:00-22:00),1,4407.6,2025-08
+STP-019,U1KILN,2025-09-01 11:56:40,2025-09-02 02:41:40,14.75,Mechanical Breakdown,Instrumentation Loop,Mechanical,A (06:00-14:00),0,2168.5,2025-09
+STP-020,U1KILN,2025-09-09 23:10:09,2025-09-10 05:11:21,6.02,Fan / Blower Trip,Instrumentation Loop,Electrical,C (22:00-06:00),0,895.6,2025-09
+STP-021,U1KILN,2025-09-12 08:17:22,2025-09-12 17:09:34,8.87,Mechanical Breakdown,Instrumentation Loop,Mechanical,A (06:00-14:00),0,1327.5,2025-09
+STP-022,U1KILN,2025-09-18 13:27:59,2025-09-18 18:06:23,4.64,Raw Material Shortage,Burner / Firing System,Operations,A (06:00-14:00),0,600.4,2025-09
+STP-023,U1KILN,2025-09-27 11:39:02,2025-09-27 13:16:50,1.63,Fan / Blower Trip,Preheater Tower,Electrical,A (06:00-14:00),0,209.9,2025-09
+STP-024,U1KILN,2025-09-30 23:02:28,2025-10-01 12:08:28,13.1,Refractory / Coating Failure,Kiln Shell / Refractory,Mechanical,C (22:00-06:00),0,1758.0,2025-09
+STP-025,U1KILN,2025-10-07 10:13:05,2025-10-07 14:59:17,4.77,Process Upset,Kiln Feed System,Operations,A (06:00-14:00),0,632.9,2025-10
+STP-026,U1KILN,2025-10-16 11:50:46,2025-10-16 16:21:58,4.52,Planned Preventive Halt,Calciner,Maintenance,A (06:00-14:00),1,639.7,2025-10
+STP-027,U1KILN,2025-10-22 17:50:40,2025-10-23 02:26:40,8.6,Raw Material Shortage,Calciner,Operations,B (14:00-22:00),0,1221.9,2025-10
+STP-028,U1KILN,2025-10-31 15:51:14,2025-10-31 17:26:02,1.58,Instrumentation Fault,Kiln Shell / Refractory,Instrumentation,B (14:00-22:00),0,208.8,2025-10
+STP-029,U1KILN,2025-11-05 15:12:00,2025-11-07 12:15:36,45.06,Refractory / Coating Failure,Preheater Tower,Mechanical,B (14:00-22:00),0,5803.5,2025-11
+STP-030,U1KILN,2025-11-11 12:41:19,2025-11-11 20:13:07,7.53,Mechanical Breakdown,Kiln Feed System,Mechanical,A (06:00-14:00),0,1020.7,2025-11
+STP-031,U1KILN,2025-11-17 22:42:53,2025-11-18 06:56:41,8.23,Raw Material Shortage,Kiln Main Drive,Operations,C (22:00-06:00),0,1159.3,2025-11
+STP-032,U1KILN,2025-11-23 03:00:14,2025-11-23 08:00:14,5.0,Instrumentation Fault,Instrumentation Loop,Instrumentation,C (22:00-06:00),0,736.2,2025-11
+STP-033,U1KILN,2025-11-28 09:02:25,2025-11-28 13:52:49,4.84,Mechanical Breakdown,Clinker Cooler,Mechanical,A (06:00-14:00),0,689.9,2025-11
+STP-034,U1KILN,2025-12-05 20:24:50,2025-12-06 07:33:50,11.15,Raw Material Shortage,Kiln Main Drive,Operations,B (14:00-22:00),0,1480.3,2025-12
+STP-035,U1KILN,2025-12-15 00:39:29,2025-12-15 15:19:41,14.67,Fan / Blower Trip,Kiln Feed System,Electrical,C (22:00-06:00),0,1895.8,2025-12
+STP-036,U1KILN,2025-12-18 21:56:08,2025-12-19 02:20:44,4.41,Instrumentation Fault,Kiln Main Drive,Instrumentation,B (14:00-22:00),0,648.3,2025-12
+STP-037,U1KILN,2025-12-26 07:48:46,2025-12-26 13:40:22,5.86,Electrical Fault,Burner / Firing System,Electrical,A (06:00-14:00),0,868.6,2025-12
+STP-038,U1KILN,2025-12-30 21:11:03,2025-12-31 03:30:15,6.32,Electrical Fault,Instrumentation Loop,Electrical,B (14:00-22:00),0,818.4,2025-12
+STP-039,U1KILN,2026-01-10 19:16:51,2026-01-11 02:06:39,6.83,Mechanical Breakdown,Kiln Main Drive,Mechanical,B (14:00-22:00),0,927.0,2026-01
+STP-040,U1KILN,2026-01-13 16:57:53,2026-01-16 01:23:05,56.42,Refractory / Coating Failure,Clinker Cooler,Mechanical,B (14:00-22:00),0,7387.3,2026-01
+STP-041,U1KILN,2026-01-20 19:41:40,2026-01-20 23:14:40,3.55,Raw Material Shortage,Calciner,Operations,B (14:00-22:00),0,521.5,2026-01
+STP-042,U1KILN,2026-01-30 14:25:44,2026-01-30 21:11:20,6.76,Electrical Fault,Kiln Main Drive,Electrical,B (14:00-22:00),0,916.8,2026-01
+STP-043,U1KILN,2026-02-04 03:11:35,2026-02-04 05:59:35,2.8,Instrumentation Fault,Kiln Main Drive,Instrumentation,C (22:00-06:00),0,411.3,2026-02
+STP-044,U1KILN,2026-02-12 10:38:54,2026-02-12 19:19:06,8.67,Mechanical Breakdown,ID Fan,Mechanical,A (06:00-14:00),0,1138.5,2026-02
+STP-045,U1KILN,2026-02-17 20:18:32,2026-02-17 22:02:56,1.74,Process Upset,ID Fan,Operations,B (14:00-22:00),0,259.1,2026-02
+STP-046,U1KILN,2026-02-24 21:37:07,2026-02-27 02:32:55,52.93,Refractory / Coating Failure,Kiln Feed System,Mechanical,B (14:00-22:00),0,7034.7,2026-02
+STP-047,U1KILN,2026-02-27 22:32:43,2026-02-28 04:53:07,6.34,Electrical Fault,Kiln Main Drive,Electrical,C (22:00-06:00),0,907.9,2026-02
+STP-048,U1KILN,2026-03-08 20:23:10,2026-03-11 00:05:46,51.71,Refractory / Coating Failure,Kiln Main Drive,Mechanical,B (14:00-22:00),0,7369.6,2026-03
+STP-049,U1KILN,2026-03-15 04:20:46,2026-03-16 08:00:22,27.66,Refractory / Coating Failure,ID Fan,Mechanical,C (22:00-06:00),0,3975.5,2026-03
+STP-050,U1KILN,2026-03-23 15:09:33,2026-03-24 02:26:21,11.28,Planned Preventive Halt,Kiln Shell / Refractory,Maintenance,B (14:00-22:00),1,1613.6,2026-03
+STP-051,U1KILN,2026-03-27 10:02:50,2026-03-27 14:44:50,4.7,Fan / Blower Trip,Instrumentation Loop,Electrical,A (06:00-14:00),0,691.1,2026-03

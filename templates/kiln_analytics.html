@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% block title %}Kiln Stoppage Analytics{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-fire" aria-hidden="true"></i>
+            {% if not unavailable %}{{ kpis.unit }} &middot; {{ kpis.dataset_file }}{% else %}Dataset missing{% endif %}
+        </p>
+        <h1><span class="accent">Kiln Stoppage</span> Analytics</h1>
+        <p>Downtime, MTBF, MTTR and equipment availability for the kiln line, to
+           identify operational bottlenecks and improve production efficiency.</p>
+    </div>
+    {% if not unavailable %}
+        <div class="page-head-actions">
+            <a class="btn btn-ghost" href="{{ url_for('api.kiln_stats') }}">
+                <i class="fa-solid fa-code" aria-hidden="true"></i>
+                JSON feed
+            </a>
+            <button class="btn btn-primary" type="button" onclick="window.print()">
+                <i class="fa-solid fa-file-export" aria-hidden="true"></i>
+                Export report
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+{% if unavailable %}
+    <section class="panel">
+        <div class="empty">
+            <i class="fa-solid fa-file-circle-xmark" aria-hidden="true"></i>
+            <h2>Kiln dataset not generated</h2>
+            <p class="text-muted">
+                Run <code class="mono">python scripts/generate_kiln_dataset.py</code>
+                and reload this page.
+            </p>
+        </div>
+    </section>
+{% else %}
+
+<div class="grid grid-4">
+    <article class="kpi kpi--primary">
+        <div class="kpi-head">
+            <span class="kpi-label">Days analysed</span>
+            <span class="kpi-icon"><i class="fa-regular fa-calendar" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.days }}</div>
+        <p class="kpi-foot">{{ kpis.start_date }} to {{ kpis.end_date }}</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Total stoppages</span>
+            <span class="kpi-icon"><i class="fa-solid fa-circle-stop" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.stoppages }}</div>
+        <p class="kpi-foot">{{ kpis.avg_per_month }} per month on average</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Total downtime</span>
+            <span class="kpi-icon"><i class="fa-solid fa-hourglass-end" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.downtime_hours|num(1) }}<small> h</small></div>
+        <p class="kpi-foot">Of {{ kpis.total_hours|num(0) }} h in the window</p>
+    </article>
+
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Kiln availability</span>
+            <span class="kpi-icon"><i class="fa-solid fa-industry" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.availability }}<small>%</small></div>
+        <p class="kpi-foot">{{ kpis.uptime_hours|num(1) }} h running</p>
+    </article>
+</div>
+
+<div class="grid grid-4 mt-16">
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">MTBF</span>
+            <span class="kpi-icon"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.mtbf }}<small> h</small></div>
+        <p class="kpi-foot">Period / stoppages &middot;
+           uptime basis {{ kpis.mtbf_uptime_basis }} h</p>
+    </article>
+
+    <article class="kpi kpi--amber">
+        <div class="kpi-head">
+            <span class="kpi-label">MTTR</span>
+            <span class="kpi-icon"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.mttr }}<small> h</small></div>
+        <p class="kpi-foot">Mean time to repair per stoppage</p>
+    </article>
+
+    <article class="kpi kpi--purple">
+        <div class="kpi-head">
+            <span class="kpi-label">Longest stoppage</span>
+            <span class="kpi-icon"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.longest_stoppage }}<small> h</small></div>
+        <p class="kpi-foot">Shortest {{ kpis.shortest_stoppage }} h</p>
+    </article>
+
+    <article class="kpi kpi--muted">
+        <div class="kpi-head">
+            <span class="kpi-label">Production loss</span>
+            <span class="kpi-icon"><i class="fa-solid fa-cubes-stacked" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ kpis.production_loss|num(0) }}<small> t</small></div>
+        <p class="kpi-foot">Clinker not produced</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+            <h2>Monthly downtime and stoppage count</h2>
+        </div>
+        <div class="chart-box tall">
+            <canvas id="chart-monthly" role="img"
+                    aria-label="Downtime hours and stoppage count by month"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            <h2>Planned vs unplanned</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-planned" role="img"
+                    aria-label="Planned versus unplanned downtime"></canvas>
+        </div>
+        <div class="divider"></div>
+        <dl style="margin: 0;">
+            <div class="kv">
+                <dt>Unplanned events</dt>
+                <dd class="text-danger">{{ kpis.unplanned_count }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Unplanned hours</dt>
+                <dd class="text-danger">{{ kpis.unplanned_hours }} h</dd>
+            </div>
+            <div class="kv">
+                <dt>Planned events</dt>
+                <dd class="text-success">{{ kpis.planned_count }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Planned hours</dt>
+                <dd class="text-success">{{ kpis.planned_hours }} h</dd>
+            </div>
+        </dl>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+            <h2>Downtime Pareto by cause</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-causes" role="img"
+                    aria-label="Downtime hours by cause with cumulative share"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-clock" aria-hidden="true"></i>
+            <h2>Stoppage duration profile</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-duration" role="img"
+                    aria-label="Distribution of stoppage durations"></canvas>
+        </div>
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+            <h2>Cause breakdown</h2>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Cause</th>
+                        <th scope="col" class="num">Events</th>
+                        <th scope="col" class="num">Hours</th>
+                        <th scope="col" class="num">MTTR</th>
+                        <th scope="col" class="num">Share</th>
+                        <th scope="col" class="num">Cumulative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in causes %}
+                    <tr>
+                        <td class="small">{{ row.cause }}</td>
+                        <td class="num">{{ row.events }}</td>
+                        <td class="num">{{ row.hours }}</td>
+                        <td class="num">{{ row.mttr }}</td>
+                        <td class="num text-warning">{{ row.share }}%</td>
+                        <td class="num text-dim">{{ row.cumulative }}%</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-sitemap" aria-hidden="true"></i>
+            <h2>Downtime by section</h2>
+        </div>
+        {% for row in sections %}
+            <div class="bar-row">
+                <span class="bar-label">{{ row.section }}</span>
+                <span class="meter">
+                    <span class="{{ ['danger', 'warning', 'amber', 'purple', 'info', 'cyan', 'primary', 'success', 'muted'][loop.index0 % 9] }}"
+                          style="width: {{ (row.hours / causes[0].hours * 100)|round(1) if causes else 0 }}%"></span>
+                </span>
+                <span class="bar-value">{{ row.hours }} h</span>
+            </div>
+        {% endfor %}
+
+        <div class="divider"></div>
+        <p class="tiny">Responsible department</p>
+        {% for row in departments %}
+            <div class="bar-row">
+                <span class="bar-label">{{ row.department }}</span>
+                <span class="meter sm">
+                    <span class="info"
+                          style="width: {{ (row.hours / kpis.downtime_hours * 100)|round(1) }}%"></span>
+                </span>
+                <span class="bar-value">{{ row.events }} ev</span>
+            </div>
+        {% endfor %}
+
+        <div class="divider"></div>
+        <p class="tiny">Shift distribution</p>
+        {% for row in shifts %}
+            <div class="bar-row">
+                <span class="bar-label">Shift {{ row.shift }}</span>
+                <span class="meter sm">
+                    <span class="purple"
+                          style="width: {{ (row.hours / kpis.downtime_hours * 100)|round(1) }}%"></span>
+                </span>
+                <span class="bar-value">{{ row.hours }} h</span>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+
+<div class="grid grid-2 mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <h2>Longest stoppages</h2>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Start</th>
+                        <th scope="col" class="num">Hours</th>
+                        <th scope="col">Cause</th>
+                        <th scope="col" class="num">Loss (t)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in longest %}
+                    <tr>
+                        <td class="mono">{{ row.stoppage_id }}</td>
+                        <td class="small nowrap">{{ row.start_time }}</td>
+                        <td class="num text-danger"><strong>{{ row.duration_hours }}</strong></td>
+                        <td class="small">{{ row.cause }}</td>
+                        <td class="num">{{ row.loss|num(0) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            <h2>Most recent stoppages</h2>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Start</th>
+                        <th scope="col" class="num">Hours</th>
+                        <th scope="col">Section</th>
+                        <th scope="col">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in recent %}
+                    <tr>
+                        <td class="mono">{{ row.stoppage_id }}</td>
+                        <td class="small nowrap">{{ row.start_time }}</td>
+                        <td class="num">{{ row.duration_hours }}</td>
+                        <td class="small">{{ row.section }}</td>
+                        <td>
+                            <span class="badge-status {{ 's-success' if row.planned else 's-danger' }}">
+                                {{ 'planned' if row.planned else 'unplanned' }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if not unavailable %}
+<script>
+(function () {
+    var monthly = {{ monthly|tojson }};
+    var causes = {{ causes|tojson }};
+    var histogram = {{ histogram|tojson }};
+    var planned = {{ kpis.planned_hours|tojson }};
+    var unplanned = {{ kpis.unplanned_hours|tojson }};
+
+    Cockpit.mixed(
+        "chart-monthly",
+        monthly.labels,
+        { label: "Downtime hours", token: "danger", values: monthly.hours },
+        { label: "Stoppage count", token: "cyan", values: monthly.events },
+        { leftTitle: "Hours", rightTitle: "Events" }
+    );
+
+    Cockpit.doughnut("chart-planned",
+        ["Unplanned downtime", "Planned downtime"],
+        [unplanned, planned],
+        ["danger", "success"]);
+
+    Cockpit.mixed(
+        "chart-causes",
+        causes.map(function (row) { return row.cause; }),
+        { label: "Downtime hours", token: "warning",
+          values: causes.map(function (row) { return row.hours; }) },
+        { label: "Cumulative %", token: "cyan",
+          values: causes.map(function (row) { return row.cumulative; }) },
+        { leftTitle: "Hours", rightTitle: "Cumulative %" }
+    );
+
+    Cockpit.bars("chart-duration", histogram.labels, histogram.values,
+        ["success", "info", "cyan", "primary", "amber", "warning", "danger"],
+        { label: "Stoppages", precision: 0 });
+})();
+</script>
+{% endif %}
+{% endblock %}

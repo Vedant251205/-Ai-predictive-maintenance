@@ -1,0 +1,38 @@
+<nav class="sidebar" id="sidebar" aria-label="Console sections">
+    {% for section in nav_sections %}
+        <div class="nav-group">
+            <p class="nav-label">
+                <i class="fa-solid {{ section.icon }}" aria-hidden="true"></i>
+                {{ section.label }}
+            </p>
+            {% for item in section['items'] %}
+                {% set target = url_for(item.endpoint) %}
+                {% set is_active = request.path == target %}
+                <a class="nav-link {% if is_active %}active{% endif %}"
+                   href="{{ target }}"
+                   {% if is_active %}aria-current="page"{% endif %}>
+                    <i class="fa-solid {{ item.icon }}" aria-hidden="true"></i>
+                    <span>{{ item.label }}</span>
+                    {% if item.badge == 'alert_count' and alert_count %}
+                        <span class="nav-badge">{{ alert_count }}</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <div class="sidebar-foot">
+        <p>System status</p>
+        <div class="row-between">
+            <span class="small">
+                <span class="live-dot" aria-hidden="true"></span>
+                Model online
+            </span>
+            <span class="tiny">{{ machine_count }} assets</span>
+        </div>
+        <div class="divider"></div>
+        <p>Signed in as</p>
+        <strong class="small">{{ current_user.user_id or 'guest' }}</strong>
+        <div class="small text-dim">{{ current_user.department or '-' }}</div>
+    </div>
+</nav>

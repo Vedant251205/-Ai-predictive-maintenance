@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img"
+     aria-label="AI Maintenance Cockpit">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1424"/>
+      <stop offset="1" stop-color="#05070e"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#e8112d"/>
+      <stop offset="0.55" stop-color="#f5a524"/>
+      <stop offset="1" stop-color="#2ee68a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#plate)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="13.5"
+        fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+
+  <!-- gauge track -->
+  <path d="M14 42 A18 18 0 0 1 50 42"
+        fill="none" stroke="#ffffff" stroke-opacity="0.14"
+        stroke-width="6" stroke-linecap="round"/>
+  <!-- gauge sweep -->
+  <path d="M14 42 A18 18 0 0 1 45.6 30.4"
+        fill="none" stroke="url(#arc)"
+        stroke-width="6" stroke-linecap="round"/>
+
+  <!-- needle -->
+  <line x1="32" y1="42" x2="41" y2="29"
+        stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="42" r="3.6" fill="#22d3ee"/>
+  <circle cx="32" cy="42" r="1.5" fill="#05070e"/>
+</svg>

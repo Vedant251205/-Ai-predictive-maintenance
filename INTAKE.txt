@@ -1,0 +1,248 @@
+===============================================================================
+ PROJECT INTAKE FORM
+ AI-Based Predictive Maintenance System
+===============================================================================
+
+HOW TO USE THIS FILE
+  - Fill in the square brackets [ ].
+  - Leave a field blank or write KEEP to accept the current value shown.
+  - Skip whole sections you do not care about; defaults already work.
+  - Save the file and tell me it is ready, or paste the filled sections
+    back into chat. Either works.
+
+  DO NOT PUT PASSWORDS OR API TOKENS IN THIS FILE.
+  Section 8 explains where those go instead. I will never read that file.
+
+
+===============================================================================
+ SECTION 1 - REPORT DOCUMENT
+===============================================================================
+Only needed if you want a written project report generated to match the
+website. Skip this section entirely if you do not.
+
+  Do you want a report document generated?   [ YES / NO ]
+  Output format                              [ DOCX / PDF / BOTH ]
+
+  Your full name                             [                              ]
+  Registration / roll number                 [                              ]
+  College or university                      [                              ]
+  Degree programme                           [ e.g. B.Tech Computer Science ]
+  Year / semester                            [                              ]
+
+  Internship organisation                    [ current: Aditya Birla Group - UltraTech Cement ]
+  Internship duration                        [ e.g. 25 May 2026 - 18 July 2026 ]
+  Reporting manager / guide                  [                              ]
+  Department                                 [ current: IT Department       ]
+
+  Should the report include screenshots
+  of the running website?                    [ YES / NO ]
+
+  Anything you want left OUT of the report   [                              ]
+
+
+===============================================================================
+ SECTION 2 - PLATFORM BRANDING
+===============================================================================
+These are the strings shown across the interface. All of them live in one
+place (config.py -> BRAND), so changing them renames the whole platform.
+
+  Keep the UltraTech / Aditya Birla branding? [ YES / NO ]
+    If NO, fill in the replacements below.
+
+  Platform name (topbar, page titles)        [ current: AI Maintenance Cockpit ]
+  Login screen title                         [ current: AI Maintenance Console ]
+  Organisation name                          [ current: UltraTech Cement    ]
+  Parent group name                          [ current: Aditya Birla Group  ]
+  Small tagline under the platform name      [ current: PREDICTIVE TELEMETRY ]
+  Project title (used on report pages)       [ current: AI-Based Predictive Maintenance System ]
+
+  Primary wordmark text                      [ current: UltraTech           ]
+  Primary wordmark subtitle                  [ current: The Engineer's Choice ]
+  Secondary wordmark text                    [ current: ABG                 ]
+
+  Accent colour preference                    [ current: red #e8112d / blue #4f8cff ]
+
+
+===============================================================================
+ SECTION 3 - USER ACCOUNTS
+===============================================================================
+These accounts are created the first time the database is built. Passwords
+are stored as PBKDF2 hashes, never in clear text.
+
+  Email domain to use for all accounts       [ current: ultratech.com       ]
+
+  ADMIN ACCOUNT
+    Display name                             [ current: Admin Plant Manager ]
+    Email                                    [ current: admin@ultratech.com ]
+    Login ID                                 [ current: admin               ]
+    Password                                 [ SEE SECTION 8 - do not write here ]
+
+  EMPLOYEE ACCOUNT
+    Display name                             [ current: Shift Engineer      ]
+    Email                                    [ current: employee@ultratech.com ]
+    Login ID                                 [ current: employee            ]
+    Password                                 [ SEE SECTION 8 - do not write here ]
+
+  ADDITIONAL ACCOUNTS (add as many rows as you want, delete unused ones)
+    ID          | Full name              | Role (admin/employee) | Department
+    ------------+------------------------+-----------------------+---------------
+    [ UT-1042 ] | [ Maintenance Planner] | [ employee ]          | [ Maintenance ]
+    [ UT-1043 ] | [ Instrumentation Lead]| [ employee ]          | [ Instrumentation ]
+    [         ] | [                    ] | [          ]          | [             ]
+    [         ] | [                    ] | [          ]          | [             ]
+
+  Should the "Load demo access key" button
+  stay on the login page?                    [ YES / NO ]
+    (It autofills the demo credentials. Turn it off for anything public.)
+
+
+===============================================================================
+ SECTION 4 - BRANDING ASSETS
+===============================================================================
+Right now the interface uses CSS wordmarks and a gradient backdrop. Drop real
+files at the paths below and the interface picks them up automatically - no
+code change needed.
+
+  Primary logo    -> static/img/logo-primary.png     [ PROVIDED / SKIP ]
+  Secondary logo  -> static/img/logo-secondary.png   [ PROVIDED / SKIP ]
+  Background video-> static/video/plant-loop.mp4     [ PROVIDED / SKIP ]
+  Favicon         -> static/img/favicon.png          [ PROVIDED / SKIP ]
+
+  Notes:
+    - Logos: PNG with transparency, around 200x60 px, any size works.
+    - Video: MP4, ideally under 10 MB and a few seconds long, it loops
+      silently at 20% opacity behind every page.
+    - If you have files somewhere else, just give me the paths and I will
+      move them into place:
+      [                                                                    ]
+
+
+===============================================================================
+ SECTION 5 - MONITORED FLEET (optional)
+===============================================================================
+Nine machines are currently modelled. Change any row, or tell me to add or
+remove assets. "Class" drives the machine-quality input the model uses:
+L = light duty, M = medium, H = heavy.
+
+  ID        | Machine name              | Class | Department        | Category
+  ----------+---------------------------+-------+-------------------+-------------
+  [ KLN-01 ]| [ Rotary Kiln Line 1    ] | [ H ] | [ Mechanical    ] | [ Pyro Process ]
+  [ KLN-02 ]| [ Rotary Kiln Line 2    ] | [ H ] | [ Mechanical    ] | [ Pyro Process ]
+  [ BLR-03 ]| [ Bag Filter Blower Unit] | [ M ] | [ Electrical    ] | [ Air Handling ]
+  [ RMM-04 ]| [ Raw Material Ball Mill] | [ H ] | [ Mechanical    ] | [ Grinding   ]
+  [ CML-05 ]| [ Coal Mill Drive       ] | [ M ] | [ Mechanical    ] | [ Grinding   ]
+  [ CLC-06 ]| [ Clinker Cooler Fan    ] | [ M ] | [ Instrumentation ]| [ Cooling   ]
+  [ FAN-07 ]| [ Preheater Fan         ] | [ M ] | [ Electrical    ] | [ Air Handling ]
+  [ CRS-08 ]| [ Limestone Crusher     ] | [ L ] | [ Mechanical    ] | [ Crushing   ]
+  [ PKR-09 ]| [ Cement Packing Line   ] | [ L ] | [ Instrumentation ]| [ Packing   ]
+
+  Add or remove machines?                    [ NO / describe below         ]
+  [                                                                        ]
+
+
+===============================================================================
+ SECTION 6 - DATASETS (optional)
+===============================================================================
+
+  TELEMETRY DATASET (trains the model)
+    Currently: 1,500 synthetic readings, physical collinearity preserved,
+    33.9% failure rate.
+    Change the row count?                    [ KEEP 1500 / other:        ]
+    Do you have real sensor data instead?    [ NO / YES - path:          ]
+
+  KILN STOPPAGE DATASET (drives the kiln analytics page)
+    Currently: synthetic, tuned to hit these exact figures.
+    Unit name                                [ current: U1KILN            ]
+    Window start date                        [ current: 2025-05-04        ]
+    Window end date                          [ current: 2026-03-31        ]
+    Number of stoppages                      [ current: 51                ]
+    Total downtime hours                     [ current: 659.7             ]
+    Do you have the real export CSV?         [ NO / YES - path:           ]
+
+
+===============================================================================
+ SECTION 7 - OUTSTANDING DECISIONS
+===============================================================================
+
+  1. The two original scripts in the parent folder
+     (generate_dataset.py, predictive_maintenance.py)
+        [ LEAVE THEM ALONE   ] - untouched, not part of the app (current)
+        [ MOVE TO legacy/    ] - keep inside the project as a legacy module
+        [ FOLD IN            ] - use their cement dataset as a second source
+        [ DELETE             ]
+     Choice: [                    ]
+
+  2. Automated test suite
+     I wrote a full end-to-end smoke test, ran it, then deleted it because
+     you had not asked for tests.
+        [ RESTORE as tests/  ] - permanent, re-runnable
+        [ SKIP               ] - current
+     Choice: [                    ]
+
+  3. Email alerts
+     Enable?                                 [ YES / NO ]
+     Recipient address (not a secret)        [                              ]
+
+  4. SMS alerts
+     Enable?                                 [ YES / NO ]
+     Recipient phone number                  [                              ]
+     (Requires: pip install twilio)
+
+  5. Alert dispatch threshold
+        [ CRITICAL ONLY ] (current) / [ WARNING AND ABOVE ] / [ ALL ]
+     Choice: [                    ]
+
+  6. Where will this run?
+        [ LOCAL ONLY ] (current - dev server on 127.0.0.1)
+        [ OFFICE LAN ] - I will add production server config and warn you
+                         about what must be hardened first
+        [ CLOUD      ] - tell me the platform if you know it
+     Choice: [                    ]
+
+  7. Anything from the report you feel is missing or wrong in the website?
+     [                                                                     ]
+     [                                                                     ]
+
+
+===============================================================================
+ SECTION 8 - SECRETS  (you fill these in yourself, I never see them)
+===============================================================================
+Do not write these in this file and do not paste them into chat. Anything
+sent to me stays in the conversation history.
+
+  STEP 1  Copy .env.example to .env in this same folder.
+  STEP 2  Open .env and fill in the values below.
+  STEP 3  Tell me "env is ready" and I will restart the server.
+
+  The .env file is already listed in .gitignore, so it will never be
+  committed.
+
+  KEYS TO FILL IN .env
+    FLASK_SECRET_KEY          any long random string, required
+    PLATFORM_EMAIL            your Gmail address, only if enabling email
+    PLATFORM_EMAIL_PASSWORD   Gmail App Password, 16 characters
+    EMAIL_ENABLED             set to 1 once the two values above are set
+    TWILIO_SID                only if enabling SMS
+    TWILIO_TOKEN              only if enabling SMS
+    TWILIO_FROM               your Twilio phone number
+    SMS_ENABLED               set to 1 once the three values above are set
+
+  ACCOUNT PASSWORDS
+    Tell me only whether you want the defaults changed. If yes, set them
+    yourself from the admin console after signing in, or put them in .env
+    style notes I do not read. Current defaults:
+      admin123     for the admin account
+      employee123  for the employee account
+    Change these?                            [ YES / NO ]
+
+  IMPORTANT
+    The file ATT03742.env in the parent folder contains what appear to be
+    live Gmail and Twilio credentials belonging to someone else. I did not
+    import any of them. Do not reuse them - get your own. If those
+    credentials are real and still active, they should be revoked.
+
+
+===============================================================================
+ END OF FORM
+ Fill in what matters to you, save, and tell me it is ready.
+===============================================================================

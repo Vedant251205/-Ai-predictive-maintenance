@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% block title %}Executive Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head" data-refresh-seconds="{{ summary.refresh_seconds * 2 }}">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+            Strategic overview
+        </p>
+        <h1><span class="accent">Executive Operations</span> Dashboard</h1>
+        <p>High-level KPIs across fleet health, failure risk, machine
+           availability, MTTR and remaining useful life, for maintenance
+           planning and capital decisions.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('main.kiln_analytics') }}">
+            <i class="fa-solid fa-fire" aria-hidden="true"></i>
+            Kiln analytics
+        </a>
+        <button class="btn btn-primary" type="button" onclick="window.print()">
+            <i class="fa-solid fa-file-export" aria-hidden="true"></i>
+            Export report
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-5">
+    <article class="kpi kpi--primary">
+        <div class="kpi-head">
+            <span class="kpi-label">Total AI predictions</span>
+            <span class="kpi-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ stats.total }}</div>
+        <p class="kpi-foot">Archive of all assessments</p>
+    </article>
+
+    <article class="kpi kpi--success">
+        <div class="kpi-head">
+            <span class="kpi-label">Fleet avg health</span>
+            <span class="kpi-icon"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.avg_health }}<small>%</small></div>
+        <p class="kpi-foot">Archive average {{ archive.avg_health }}%</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Failure risk</span>
+            <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.failure_risk_pct }}<small>%</small></div>
+        <p class="kpi-foot">Assets outside the healthy band</p>
+    </article>
+
+    <article class="kpi kpi--info">
+        <div class="kpi-head">
+            <span class="kpi-label">Plant availability</span>
+            <span class="kpi-icon"><i class="fa-solid fa-industry" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.availability }}<small>%</small></div>
+        <p class="kpi-foot">Based on prediction health ratio</p>
+    </article>
+
+    <article class="kpi kpi--warning">
+        <div class="kpi-head">
+            <span class="kpi-label">Est. MTTR</span>
+            <span class="kpi-icon"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.mttr_estimate }}<small> h</small></div>
+        <p class="kpi-foot">{{ summary.man_hours }} man-hours queued</p>
+    </article>
+</div>
+
+<div class="grid grid-4 mt-16">
+    <article class="kpi kpi--amber">
+        <div class="kpi-head">
+            <span class="kpi-label">Avg failure probability</span>
+            <span class="kpi-icon"><i class="fa-solid fa-percent" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.avg_failure }}<small>%</small></div>
+        <p class="kpi-foot">Across all live assets</p>
+    </article>
+
+    <article class="kpi kpi--cyan">
+        <div class="kpi-head">
+            <span class="kpi-label">Avg remaining life</span>
+            <span class="kpi-icon"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.avg_rul_hours|num(0) }}<small> h</small></div>
+        <p class="kpi-foot">{{ summary.avg_rul_days }} operating days</p>
+    </article>
+
+    <article class="kpi kpi--danger">
+        <div class="kpi-head">
+            <span class="kpi-label">Critical now</span>
+            <span class="kpi-icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ summary.critical }}</div>
+        <p class="kpi-foot">{{ summary.warning }} in warning band</p>
+    </article>
+
+    <article class="kpi kpi--purple">
+        <div class="kpi-head">
+            <span class="kpi-label">Model ROC-AUC</span>
+            <span class="kpi-icon"><i class="fa-solid fa-microchip" aria-hidden="true"></i></span>
+        </div>
+        <div class="kpi-value">{{ metrics.roc_auc }}<small>%</small></div>
+        <p class="kpi-foot">F1 {{ metrics.f1 }}% on held-out data</p>
+    </article>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-area" aria-hidden="true"></i>
+            <h2>Fleet health overview</h2>
+            <span class="spacer"></span>
+            <small><span class="live-dot" aria-hidden="true"></span>
+                   updates every {{ summary.refresh_seconds }}s</small>
+        </div>
+        <div class="chart-box tall">
+            <canvas id="chart-trend" role="img"
+                    aria-label="Fleet average health over recent refresh windows"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+            <h2>Operational KPIs</h2>
+        </div>
+        <dl style="margin: 0;">
+            <div class="kv">
+                <dt>Machines online</dt>
+                <dd>{{ summary.total }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Healthy / warning / critical</dt>
+                <dd>{{ summary.healthy }} / {{ summary.warning }} / {{ summary.critical }}</dd>
+            </div>
+            <div class="kv">
+                <dt>P1 + P2 work orders</dt>
+                <dd class="text-danger">{{ summary.p1_p2 }}</dd>
+            </div>
+            <div class="kv">
+                <dt>Queued man-hours</dt>
+                <dd>{{ summary.man_hours }} h</dd>
+            </div>
+            <div class="kv">
+                <dt>Archive avg failure prob</dt>
+                <dd>{{ archive.avg_failure }}%</dd>
+            </div>
+            <div class="kv">
+                <dt>Archive avg RUL</dt>
+                <dd>{{ archive.avg_rul|num(0) }} h</dd>
+            </div>
+            {% if kiln %}
+                <div class="kv">
+                    <dt>Kiln availability</dt>
+                    <dd class="text-success">{{ kiln.availability }}%</dd>
+                </div>
+                <div class="kv">
+                    <dt>Kiln MTBF / MTTR</dt>
+                    <dd>{{ kiln.mtbf }} h / {{ kiln.mttr }} h</dd>
+                </div>
+                <div class="kv">
+                    <dt>Kiln downtime ({{ kiln.days }} d)</dt>
+                    <dd>{{ kiln.downtime_hours|num(1) }} h</dd>
+                </div>
+            {% endif %}
+        </dl>
+    </section>
+</div>
+
+<div class="grid grid-wide-left mt-16">
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+            <h2>Health by asset</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-health" role="img"
+                    aria-label="Health score by machine"></canvas>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            <h2>Work order mix</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="chart-priority" role="img"
+                    aria-label="Work orders by priority"></canvas>
+        </div>
+    </section>
+</div>
+
+<section class="panel mt-16">
+    <div class="panel-head">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <h2>Assets requiring executive attention</h2>
+        <span class="spacer"></span>
+        <a class="small" href="{{ url_for('main.maintenance_advisor') }}">
+            Open maintenance advisor
+        </a>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th scope="col">Machine</th>
+                    <th scope="col">Department</th>
+                    <th scope="col" class="num">Health</th>
+                    <th scope="col" class="num">Failure prob</th>
+                    <th scope="col" class="num">RUL</th>
+                    <th scope="col" class="num">Service in</th>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Recommended action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for machine in fleet|sort(attribute='health_score') %}
+                {% if machine.status in ['Warning', 'Critical'] %}
+                    <tr>
+                        <td>
+                            <strong class="mono">{{ machine.machine_id }}</strong><br>
+                            <span class="small text-muted">{{ machine.machine_name }}</span>
+                        </td>
+                        <td class="small">{{ machine.department }}</td>
+                        <td class="num text-{{ machine.colour }}">
+                            <strong>{{ machine.health_score }}</strong>
+                        </td>
+                        <td class="num">{{ machine.failure_prob }}%</td>
+                        <td class="num">{{ machine.rul_hours|num(0) }} h</td>
+                        <td class="num">{{ machine.next_service_days }} d</td>
+                        <td>
+                            <span class="badge-status s-{{ machine.priority_colour }}">
+                                {{ machine.priority }} {{ machine.priority_label }}
+                            </span>
+                        </td>
+                        <td class="small">{{ machine.action }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var trend = {{ trend|tojson }};
+    var health = {{ health_series|tojson }};
+    var counts = {{ summary.priority_counts|tojson }};
+
+    Cockpit.line("chart-trend", trend.labels, [
+        { label: "Fleet average health", token: "cyan", values: trend.values }
+    ], { max: 100, beginAtZero: true });
+
+    Cockpit.bars("chart-health", health.labels, health.values, health.colours, {
+        label: "Health score", max: 100
+    });
+
+    var codes = ["P1", "P2", "P3", "P4", "P5"];
+    Cockpit.bars(
+        "chart-priority",
+        codes,
+        codes.map(function (code) { return counts[code] || 0; }),
+        ["danger", "warning", "amber", "info", "success"],
+        { label: "Work orders", precision: 0, thickness: 34 }
+    );
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+{% block title %}Predictive Cockpit{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="tag">
+            <i class="fa-solid fa-robot" aria-hidden="true"></i>
+            Random Forest inference
+        </p>
+        <h1><span class="accent">Predictive</span> Cockpit</h1>
+        <p>Enter live sensor values and the trained model returns a failure
+           probability, health score, remaining useful life and a prioritised
+           maintenance recommendation.</p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn btn-ghost" href="{{ url_for('history.records') }}">
+            <i class="fa-solid fa-database" aria-hidden="true"></i>
+            Prediction history
+        </a>
+        <a class="btn btn-ghost" href="{{ url_for('main.feature_intelligence') }}">
+            <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>
+            Model internals
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-wide-right">
+    <!-- ---------------------------------------------------------- input -->
+    <section class="panel">
+        <div class="panel-head">
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            <h2>Sensor input</h2>
+        </div>
+
+        <p class="tiny" style="margin-bottom: 8px;">Quick presets</p>
+        <div class="row-gap" style="margin-bottom: 16px;">
+            {% for key, preset in presets.items() %}
+                {# preset['values'] not preset.values: attribute lookup would
+                   resolve to the dict's own .values() method. #}
+                <button class="btn btn-sm btn-ghost" type="button"
+                        data-preset='{{ preset['values']|tojson }}'>
+                    <i class="fa-solid {{ preset.icon }} text-{{ preset.colour }}"
+                       aria-hidden="true"></i>
+                    {{ preset.label }}
+                </button>
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{{ url_for('predict.cockpit') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="field">
+                <label for="machine_id">
+                    <i class="fa-solid fa-industry" aria-hidden="true"></i>
+                    Target machine (optional)
+                </label>
+                <select id="machine_id" name="machine_id">
+                    <option value="">Ad-hoc reading (not linked to an asset)</option>
+                    {% for machine in machines %}
+                        <option value="{{ machine.id }}"
+                            {% if values.machine_id == machine.id %}selected{% endif %}>
+                            {{ machine.id }} - {{ machine.name }} ({{ machine.department }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="machine_type">
+                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                    Machine class / quality
+                </label>
+                <select id="machine_type" name="machine_type">
+                    {% for code, label in machine_types.items() %}
+                        <option value="{{ code }}"
+                            {% if values.machine_type == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="divider"></div>
+
+            {% for field, bounds in ranges.items() %}
+                {% set decimals = 0 if bounds.step is integer else 1 %}
+                <div class="field">
+                    <div class="field-row">
+                        <label for="{{ field }}" style="margin: 0;">
+                            <i class="fa-solid {{ bounds.icon }}" aria-hidden="true"></i>
+                            {{ labels[field] }}
+                        </label>
+                        <span class="field-value">
+                            <span id="out-{{ field }}">{{ values[field] }}</span>
+                            {{ bounds.unit }}
+                        </span>
+                    </div>
+
+                    <input type="range" id="range-{{ field }}"
+                           min="{{ bounds.min }}" max="{{ bounds.max }}"
+                           step="{{ bounds.step }}" value="{{ values[field] }}"
+                           data-output="out-{{ field }}" data-mirror="{{ field }}"
+                           data-decimals="{{ decimals }}"
+                           aria-label="{{ labels[field] }} slider">
+
+                    <div class="range-scale">
+                        <span>{{ bounds.min }}</span>
+                        <span class="text-success">
+                            normal {{ bounds.normal_min }}-{{ bounds.normal_max }}
+                        </span>
+                        <span>{{ bounds.max }}</span>
+                    </div>
+
+                    <input type="number" id="{{ field }}" name="{{ field }}"
+                           min="{{ bounds.min }}" max="{{ bounds.max }}"
+                           step="{{ bounds.step }}" value="{{ values[field] }}"
+                           required style="margin-top: 8px;">
+                    <p class="field-hint">{{ bounds.note }}</p>
+                </div>
+            {% endfor %}
+
+            <div class="field">
+                <label for="runtime_hours">
+                    <i class="fa-solid fa-stopwatch" aria-hidden="true"></i>
+                    Total runtime (hours)
+                </label>
+                <input type="number" id="runtime_hours" name="runtime_hours"
+                       min="0" max="200000" step="1"
+                       value="{{ values.runtime_hours }}">
+                <p class="field-hint">Recorded with the prediction for trend
+                   analysis. It is not a model input.</p>
+            </div>
+
+            <button class="btn btn-primary btn-block" type="submit">
+                <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                Run AI analysis
+            </button>
+        </form>
+    </section>
+
+    <!-- --------------------------------------------------------- result -->
+    <div class="grid">
+    {% if result %}
+        <section class="panel">
+            <div class="panel-head">
+                <i class="fa-solid fa-microchip" aria-hidden="true"></i>
+                <h2>Prediction result</h2>
+                <span class="spacer"></span>
+                <small>record #{{ result.record_id }} &middot; {{ result.created_at }}</small>
+            </div>
+
+            <div class="grid grid-wide-right" style="align-items: center;">
+                <div class="gauge-wrap">
+                    <div class="gauge">
+                        <svg width="148" height="148" viewBox="0 0 148 148"
+                             role="img"
+                             aria-label="Health score {{ result.health_score }} out of 100">
+                            <circle class="track-ring" cx="74" cy="74" r="54"></circle>
+                            <circle class="value-ring" cx="74" cy="74" r="54"
+                                    stroke="var(--{{ result.colour }})"
+                                    stroke-dasharray="{{ gauge_circumference(54) }}"
+                                    stroke-dashoffset="{{ gauge_offset(result.health_score, 54) }}">
+                            </circle>
+                        </svg>
+                        <span class="gauge-centre">
+                            <strong class="text-{{ result.colour }}">
+                                {{ result.health_score }}
+                            </strong>
+                            <span>Health score</span>
+                        </span>
+                    </div>
+                    <span class="badge-status s-{{ result.colour }}">
+                        <i class="fa-solid {{ result.status|status_icon }}" aria-hidden="true"></i>
+                        {{ result.status }}
+                    </span>
+                </div>
+
+                <div class="grid grid-2">
+                    <article class="kpi kpi--danger">
+                        <div class="kpi-head">
+                            <span class="kpi-label">Failure probability</span>
+                        </div>
+                        <div class="kpi-value">{{ result.failure_prob }}<small>%</small></div>
+                        <p class="kpi-foot">Random Forest, 150 trees</p>
+                    </article>
+
+                    <article class="kpi kpi--info">
+                        <div class="kpi-head">
+                            <span class="kpi-label">Remaining life</span>
+                        </div>
+                        <div class="kpi-value">{{ result.rul_hours|num(0) }}<small> h</small></div>
+                        <p class="kpi-foot">{{ result.rul_days }} days of operation</p>
+                    </article>
+
+                    <article class="kpi kpi--warning">
+                        <div class="kpi-head">
+                            <span class="kpi-label">Next service</span>
+                        </div>
+                        <div class="kpi-value">{{ result.next_service_days }}<small> d</small></div>
+                        <p class="kpi-foot">By {{ result.next_service_date }}</p>
+                    </article>
+
+                    <article class="kpi kpi--{{ result.priority_colour }}">
+                        <div class="kpi-head">
+                            <span class="kpi-label">Work order</span>
+                        </div>
+                        <div class="kpi-value">{{ result.priority }}</div>
+                        <p class="kpi-foot">{{ result.priority_label }} &middot;
+                           {{ result.work_order.sla }}</p>
+                    </article>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="list-row l-{{ result.recommendation.colour }}">
+                <span class="list-icon text-{{ result.recommendation.colour }}">
+                    <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+                </span>
+                <span class="list-body">
+                    <strong>{{ result.recommendation.headline }}
+                        &middot; {{ result.action }}</strong>
+                    <span>{{ result.recommendation.body }}</span>
+                </span>
+            </div>
+        </section>
+
+        <div class="grid grid-2">
+            <section class="panel">
+                <div class="panel-head">
+                    <i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i>
+                    <h2>Risk drivers</h2>
+                </div>
+                {% if result.drivers %}
+                    <div class="stack">
+                        {% for driver in result.drivers %}
+                            <div class="list-row l-{{ 'danger' if driver.severity == 'critical' else 'warning' }}">
+                                <span class="list-body">
+                                    <strong>{{ driver.label }}
+                                        <span class="mono text-{{ 'danger' if driver.severity == 'critical' else 'warning' }}">
+                                            {{ driver.value }}
+                                        </span>
+                                    </strong>
+                                    <span>{{ driver.message }}</span>
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+                        Every parameter is inside its operating envelope.
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>
+                    <h2>Action plan</h2>
+                </div>
+                <p class="tiny">Corrective</p>
+                <ul class="small text-muted" style="padding-left: 18px; margin-top: 4px;">
+                    {% for step in result.work_order.corrective %}
+                        <li>{{ step }}</li>
+                    {% endfor %}
+                </ul>
+                <p class="tiny" style="margin-top: 12px;">Preventive</p>
+                <ul class="small text-muted" style="padding-left: 18px; margin-top: 4px;">
+                    {% for step in result.work_order.preventive %}
+                        <li>{{ step }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="divider"></div>
+                <dl style="margin: 0;">
+                    <div class="kv">
+                        <dt>Responsible department</dt>
+                        <dd>{{ result.work_order.department }}</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Estimated man-hours</dt>
+                        <dd>{{ result.work_order.man_hours }} h</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Response window</dt>
+                        <dd>{{ result.work_order.sla }}</dd>
+                    </div>
+                </dl>
+            </section>
+        </div>
+
+        <section class="panel">
+            <div class="panel-head">
+                <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                <h2>Reading summary and RUL breakdown</h2>
+            </div>
+            <div class="grid grid-2">
+                <dl style="margin: 0;">
+                    <div class="kv">
+                        <dt>Asset</dt>
+                        <dd>{{ result.machine_id or 'Ad-hoc' }} &middot;
+                            {{ result.machine_name }}</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Air temperature</dt>
+                        <dd>{{ result.air_temperature_k }} K</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Process temperature</dt>
+                        <dd>{{ result.process_temperature_k }} K</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Thermal gap (dT)</dt>
+                        <dd>{{ result.thermal_delta_k }} K</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Rotational speed</dt>
+                        <dd>{{ result.rotational_speed_rpm }} RPM</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Torque</dt>
+                        <dd>{{ result.torque_nm }} Nm</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Tool wear</dt>
+                        <dd>{{ result.tool_wear_min }} min</dd>
+                    </div>
+                    <div class="kv">
+                        <dt>Mechanical power</dt>
+                        <dd>{{ result.power_w|num(0) }} W</dd>
+                    </div>
+                </dl>
+
+                <div>
+                    <p class="small text-muted">
+                        RUL = 7,600 h baseline x wear term x health term x stress
+                        term. Each term below is the multiplier applied for this
+                        reading.
+                    </p>
+                    <div class="bar-row">
+                        <span class="bar-label">Wear term</span>
+                        <span class="meter">
+                            <span class="cyan"
+                                  style="width: {{ (result.rul_terms.wear * 100)|round(1) }}%"></span>
+                        </span>
+                        <span class="bar-value">{{ result.rul_terms.wear }}</span>
+                    </div>
+                    <div class="bar-row">
+                        <span class="bar-label">Health term</span>
+                        <span class="meter">
+                            <span class="success"
+                                  style="width: {{ (result.rul_terms.health * 100)|round(1) }}%"></span>
+                        </span>
+                        <span class="bar-value">{{ result.rul_terms.health }}</span>
+                    </div>
+                    <div class="bar-row">
+                        <span class="bar-label">Stress term</span>
+                        <span class="meter">
+                            <span class="warning"
+                                  style="width: {{ (result.rul_terms.stress * 100)|round(1) }}%"></span>
+                        </span>
+                        <span class="bar-value">{{ result.rul_terms.stress }}</span>
+                    </div>
+                    <div class="divider"></div>
+                    <dl style="margin: 0;">
+                        <div class="kv">
+                            <dt>Thermal deviation</dt>
+                            <dd>{{ result.rul_deviations.thermal }}</dd>
+                        </div>
+                        <div class="kv">
+                            <dt>Speed deviation</dt>
+                            <dd>{{ result.rul_deviations.speed }}</dd>
+                        </div>
+                        <div class="kv">
+                            <dt>Torque deviation</dt>
+                            <dd>{{ result.rul_deviations.torque }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </section>
+    {% else %}
+        <section class="panel" style="display: grid; place-items: center; min-height: 340px;">
+            <div class="empty">
+                <i class="fa-solid fa-microchip" aria-hidden="true"></i>
+                <h2 style="margin-bottom: 6px;">Awaiting sensor input</h2>
+                <p class="text-muted" style="max-width: 46ch; margin: 0 auto;">
+                    Set the five sensor channels on the left, or load a preset,
+                    then run the analysis. The model returns a health score,
+                    failure probability, remaining useful life and a prioritised
+                    work order.
+                </p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <i class="fa-solid fa-industry" aria-hidden="true"></i>
+                <h2>Load a live asset reading</h2>
+                <span class="spacer"></span>
+                <small>{{ summary.total }} monitored assets</small>
+            </div>
+            <div class="grid grid-3">
+                {% for machine in fleet %}
+                    <a class="list-row l-{{ machine.colour }}"
+                       style="text-decoration: none;"
+                       href="{{ url_for('predict.cockpit', machine_id=machine.machine_id) }}">
+                        <span class="list-icon text-{{ machine.colour }}">
+                            <i class="fa-solid {{ machine.machine_icon }}" aria-hidden="true"></i>
+                        </span>
+                        <span class="list-body">
+                            <strong>{{ machine.machine_id }}</strong>
+                            <span>Health {{ machine.health_score }}%</span>
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
