@@ -23,8 +23,10 @@ services:
     envVars:
       - key: APP_ENV
         value: production
+      # Major.minor only. Pinning an exact patch release causes some hosts to
+      # fail with "No interpreter found for Python 3.13.1".
       - key: PYTHON_VERSION
-        value: 3.13.1
+        value: "3.12"
       - key: FLASK_DEBUG
         value: 0
       - key: EMAIL_ENABLED
