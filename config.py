@@ -229,6 +229,24 @@ MACHINE_TYPES = {
     "H": "H (High / Heavy-duty)",
 }
 
+# The machine class is encoded to an integer before it reaches the pipeline.
+#
+# This keeps the model's input a plain numeric array rather than a mixed-type
+# table, which means inference needs only NumPy and not pandas. Dropping pandas
+# from the request path takes about 62 MB off the deployed bundle, which is what
+# allows the platform to fit inside a serverless size limit.
+# Codes are assigned in ALPHABETICAL order of the class letter (H, L, M).
+# OneHotEncoder previously inferred its categories from the raw strings and
+# sorted them, so keeping that order means the encoded columns land in exactly
+# the same positions as before. The trained forest is therefore identical to the
+# one whose results are quoted in the report, rather than merely equivalent.
+MACHINE_TYPE_CODES = {"H": 0, "L": 1, "M": 2}
+MACHINE_TYPE_ORDER = ["H", "L", "M"]
+
+# Column order the fitted pipeline expects: the five numeric sensors, then the
+# encoded machine class.
+MODEL_INPUT_ORDER = NUMERIC_FEATURES + ["machine_type_code"]
+
 
 # ---------------------------------------------------------------------------
 # Health scoring, risk banding and Remaining Useful Life

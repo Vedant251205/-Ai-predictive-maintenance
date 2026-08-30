@@ -15,7 +15,7 @@ import sys
 import threading
 
 import joblib
-import pandas as pd
+import numpy as np
 
 import config
 
@@ -41,13 +41,31 @@ def bootstrap(verbose: bool = True) -> None:
     a working platform without any manual preparation step.
     """
     scripts_dir = config.BASE_DIR / "scripts"
+    kiln_analytics = config.DATASET_DIR / "kiln_analytics.json"
+
+    model_ready = config.MODEL_PATH.exists() and config.MODEL_META_PATH.exists()
+    kiln_ready = kiln_analytics.exists()
+
+    # A slim deployment ships only the prebuilt artefacts: the trained model and
+    # the precomputed kiln analytics. The raw CSVs and the generator scripts are
+    # excluded to keep the bundle small. Nothing should be regenerated in that
+    # case, and attempting it would fail because the scripts are absent.
     steps = []
-    if not config.TELEMETRY_CSV.exists():
+    if not model_ready and not config.TELEMETRY_CSV.exists():
         steps.append(scripts_dir / "generate_synthetic_dataset.py")
-    if not config.KILN_CSV.exists():
+    if not kiln_ready and not config.KILN_CSV.exists():
         steps.append(scripts_dir / "generate_kiln_dataset.py")
-    if not config.MODEL_PATH.exists() or not config.MODEL_META_PATH.exists():
+    if not model_ready:
         steps.append(scripts_dir / "train_model.py")
+    if not kiln_ready:
+        steps.append(scripts_dir / "precompute_kiln_analytics.py")
+
+    missing = [step for step in steps if not step.exists()]
+    if missing:
+        raise ModelUnavailable(
+            "Prebuilt artefacts are missing and the generator scripts are not "
+            "present either: " + ", ".join(step.name for step in missing)
+        )
 
     for script in steps:
         if verbose:
@@ -100,24 +118,32 @@ def reload() -> None:
         _metadata = None
 
 
-def _frame(readings: list[dict]) -> pd.DataFrame:
+def _matrix(readings: list[dict]) -> np.ndarray:
+    """Build the numeric design matrix the fitted pipeline expects.
+
+    Column order is fixed: the five numeric sensors, then the encoded machine
+    class. A NumPy array is used rather than a DataFrame so pandas is not a
+    runtime dependency, which keeps the deployed bundle small enough for a
+    serverless host.
+    """
     rows = []
     for reading in readings:
-        rows.append({
-            "air_temperature_k": float(reading["air_temperature_k"]),
-            "process_temperature_k": float(reading["process_temperature_k"]),
-            "rotational_speed_rpm": float(reading["rotational_speed_rpm"]),
-            "torque_nm": float(reading["torque_nm"]),
-            "tool_wear_min": float(reading["tool_wear_min"]),
-            "machine_type": str(reading.get("machine_type", "M")).upper(),
-        })
-    return pd.DataFrame(rows)[FEATURE_ORDER]
+        machine_type = str(reading.get("machine_type", "M")).upper()
+        rows.append([
+            float(reading["air_temperature_k"]),
+            float(reading["process_temperature_k"]),
+            float(reading["rotational_speed_rpm"]),
+            float(reading["torque_nm"]),
+            float(reading["tool_wear_min"]),
+            float(config.MACHINE_TYPE_CODES.get(machine_type, 1)),
+        ])
+    return np.asarray(rows, dtype=float)
 
 
 def failure_probability(reading: dict) -> float:
     """Probability of failure as a percentage, 0-100."""
     pipeline = get_pipeline()
-    proba = pipeline.predict_proba(_frame([reading]))[0][1]
+    proba = pipeline.predict_proba(_matrix([reading]))[0][1]
     return round(float(proba) * 100.0, 2)
 
 
@@ -125,7 +151,7 @@ def failure_probabilities(readings: list[dict]) -> list[float]:
     if not readings:
         return []
     pipeline = get_pipeline()
-    proba = pipeline.predict_proba(_frame(readings))[:, 1]
+    proba = pipeline.predict_proba(_matrix(readings))[:, 1]
     return [round(float(value) * 100.0, 2) for value in proba]
 
 

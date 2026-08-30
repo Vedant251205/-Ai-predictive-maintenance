@@ -533,12 +533,18 @@ class TestKilnAnalytics(unittest.TestCase):
         self.assertEqual(sum(histogram["values"]), self.kpis["stoppages"])
 
     def test_stoppages_never_overlap(self):
-        frame = self.service.load().sort_values("start_dt")
-        ends = frame["end_dt"].tolist()
-        starts = frame["start_dt"].tolist()
-        for index in range(1, len(starts)):
+        from datetime import datetime
+
+        rows = self.service.chronological_stoppages()
+        self.assertEqual(len(rows), self.kpis["stoppages"])
+
+        def parse(value):
+            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+
+        for index in range(1, len(rows)):
             self.assertLessEqual(
-                ends[index - 1], starts[index],
+                parse(rows[index - 1]["end_time"]),
+                parse(rows[index]["start_time"]),
                 "a stoppage must finish before the next one begins")
 
 

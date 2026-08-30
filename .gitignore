@@ -1,11 +1,12 @@
 # Secrets - never commit. Real values go in the host's environment settings.
 .env
 
-# Runtime artefacts. The trained model and the database are rebuilt on the
-# server: the build step runs the generators and the trainer, and bootstrap()
-# recreates the database on every start.
-models/*.joblib
-models/*.json
+# The trained model and the precomputed kiln analytics ARE committed on purpose.
+# Serverless hosts have no build step that can run a training script, and
+# training inside a request would exceed the function timeout. Both artefacts are
+# produced from seeded generators, so they are reproducible.
+
+# The database is never committed: it is recreated and re-seeded on every start.
 instance/
 *.db
 

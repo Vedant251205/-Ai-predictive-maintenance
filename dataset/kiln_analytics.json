@@ -1,0 +1,898 @@
+{
+  "generated_at": "2026-08-31 01:32:35",
+  "kpis": {
+    "unit": "U1KILN",
+    "organisation": "UltraTech Cement",
+    "dataset_file": "kiln_stoppages.csv",
+    "start_date": "04-05-2025",
+    "end_date": "31-03-2026",
+    "days": 332,
+    "total_hours": 7968.0,
+    "stoppages": 51,
+    "downtime_hours": 659.7,
+    "uptime_hours": 7308.3,
+    "availability": 91.7,
+    "mtbf": 156.2,
+    "mtbf_uptime_basis": 143.3,
+    "mttr": 12.9,
+    "longest_stoppage": 56.4,
+    "shortest_stoppage": 1.6,
+    "production_loss": 91116.0,
+    "unplanned_count": 47,
+    "unplanned_hours": 594.4,
+    "planned_count": 4,
+    "planned_hours": 65.3,
+    "avg_per_month": 4.7
+  },
+  "causes": [
+    {
+      "cause": "Refractory / Coating Failure",
+      "events": 10,
+      "hours": 337.3,
+      "share": 51.1,
+      "cumulative": 51.1,
+      "loss": 46370.0,
+      "mttr": 33.7
+    },
+    {
+      "cause": "Electrical Fault",
+      "events": 8,
+      "hours": 80.4,
+      "share": 12.2,
+      "cumulative": 63.3,
+      "loss": 11068.0,
+      "mttr": 10.1
+    },
+    {
+      "cause": "Mechanical Breakdown",
+      "events": 8,
+      "hours": 65.7,
+      "share": 10.0,
+      "cumulative": 73.3,
+      "loss": 9189.0,
+      "mttr": 8.2
+    },
+    {
+      "cause": "Planned Preventive Halt",
+      "events": 4,
+      "hours": 65.3,
+      "share": 9.9,
+      "cumulative": 83.2,
+      "loss": 8922.0,
+      "mttr": 16.3
+    },
+    {
+      "cause": "Raw Material Shortage",
+      "events": 5,
+      "hours": 36.2,
+      "share": 5.5,
+      "cumulative": 88.7,
+      "loss": 4983.0,
+      "mttr": 7.2
+    },
+    {
+      "cause": "Instrumentation Fault",
+      "events": 8,
+      "hours": 34.0,
+      "share": 5.2,
+      "cumulative": 93.8,
+      "loss": 4951.0,
+      "mttr": 4.3
+    },
+    {
+      "cause": "Fan / Blower Trip",
+      "events": 5,
+      "hours": 30.0,
+      "share": 4.6,
+      "cumulative": 98.4,
+      "loss": 4114.0,
+      "mttr": 6.0
+    },
+    {
+      "cause": "Process Upset",
+      "events": 3,
+      "hours": 10.7,
+      "share": 1.6,
+      "cumulative": 100.0,
+      "loss": 1518.0,
+      "mttr": 3.6
+    }
+  ],
+  "sections": [
+    {
+      "section": "Kiln Feed System",
+      "events": 7,
+      "hours": 132.7
+    },
+    {
+      "section": "Kiln Main Drive",
+      "events": 9,
+      "hours": 105.4
+    },
+    {
+      "section": "ID Fan",
+      "events": 6,
+      "hours": 97.2
+    },
+    {
+      "section": "Calciner",
+      "events": 8,
+      "hours": 86.0
+    },
+    {
+      "section": "Clinker Cooler",
+      "events": 3,
+      "hours": 67.7
+    },
+    {
+      "section": "Preheater Tower",
+      "events": 3,
+      "hours": 64.9
+    },
+    {
+      "section": "Instrumentation Loop",
+      "events": 7,
+      "hours": 49.7
+    },
+    {
+      "section": "Kiln Shell / Refractory",
+      "events": 5,
+      "hours": 38.4
+    },
+    {
+      "section": "Burner / Firing System",
+      "events": 3,
+      "hours": 17.7
+    }
+  ],
+  "departments": [
+    {
+      "department": "Mechanical",
+      "events": 18,
+      "hours": 403.0
+    },
+    {
+      "department": "Electrical",
+      "events": 13,
+      "hours": 110.5
+    },
+    {
+      "department": "Maintenance",
+      "events": 4,
+      "hours": 65.3
+    },
+    {
+      "department": "Operations",
+      "events": 8,
+      "hours": 46.9
+    },
+    {
+      "department": "Instrumentation",
+      "events": 8,
+      "hours": 34.0
+    }
+  ],
+  "shifts": [
+    {
+      "shift": "A (06:00-14:00)",
+      "events": 16,
+      "hours": 149.7
+    },
+    {
+      "shift": "B (14:00-22:00)",
+      "events": 20,
+      "hours": 349.1
+    },
+    {
+      "shift": "C (22:00-06:00)",
+      "events": 15,
+      "hours": 161.0
+    }
+  ],
+  "monthly": {
+    "labels": [
+      "May 2025",
+      "Jun 2025",
+      "Jul 2025",
+      "Aug 2025",
+      "Sep 2025",
+      "Oct 2025",
+      "Nov 2025",
+      "Dec 2025",
+      "Jan 2026",
+      "Feb 2026",
+      "Mar 2026"
+    ],
+    "events": [
+      5,
+      4,
+      5,
+      4,
+      6,
+      4,
+      5,
+      5,
+      4,
+      5,
+      4
+    ],
+    "hours": [
+      89.1,
+      33.7,
+      49.8,
+      64.2,
+      49.0,
+      19.5,
+      70.7,
+      42.4,
+      73.6,
+      72.5,
+      95.3
+    ]
+  },
+  "duration_histogram": {
+    "labels": [
+      "<2 h",
+      "2-4 h",
+      "4-8 h",
+      "8-16 h",
+      "16-24 h",
+      "24-48 h",
+      ">48 h"
+    ],
+    "values": [
+      3,
+      4,
+      21,
+      13,
+      1,
+      6,
+      3
+    ]
+  },
+  "longest": [
+    {
+      "stoppage_id": "STP-040",
+      "start_time": "2026-01-13 16:57:53",
+      "end_time": "2026-01-16 01:23:05",
+      "duration_hours": 56.4,
+      "cause": "Refractory / Coating Failure",
+      "section": "Clinker Cooler",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7387.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-046",
+      "start_time": "2026-02-24 21:37:07",
+      "end_time": "2026-02-27 02:32:55",
+      "duration_hours": 52.9,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Feed System",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7035.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-048",
+      "start_time": "2026-03-08 20:23:10",
+      "end_time": "2026-03-11 00:05:46",
+      "duration_hours": 51.7,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Main Drive",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7370.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-029",
+      "start_time": "2025-11-05 15:12:00",
+      "end_time": "2025-11-07 12:15:36",
+      "duration_hours": 45.1,
+      "cause": "Refractory / Coating Failure",
+      "section": "Preheater Tower",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 5804.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-018",
+      "start_time": "2025-08-26 21:33:00",
+      "end_time": "2025-08-28 07:12:36",
+      "duration_hours": 33.7,
+      "cause": "Planned Preventive Halt",
+      "section": "ID Fan",
+      "department": "Maintenance",
+      "shift": "B (14:00-22:00)",
+      "loss": 4408.0,
+      "planned": true
+    },
+    {
+      "stoppage_id": "STP-002",
+      "start_time": "2025-05-15 07:10:47",
+      "end_time": "2025-05-16 13:43:11",
+      "duration_hours": 30.5,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Feed System",
+      "department": "Mechanical",
+      "shift": "A (06:00-14:00)",
+      "loss": 4611.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-003",
+      "start_time": "2025-05-21 03:50:45",
+      "end_time": "2025-05-22 09:55:33",
+      "duration_hours": 30.1,
+      "cause": "Electrical Fault",
+      "section": "Calciner",
+      "department": "Electrical",
+      "shift": "C (22:00-06:00)",
+      "loss": 4139.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-049",
+      "start_time": "2026-03-15 04:20:46",
+      "end_time": "2026-03-16 08:00:22",
+      "duration_hours": 27.7,
+      "cause": "Refractory / Coating Failure",
+      "section": "ID Fan",
+      "department": "Mechanical",
+      "shift": "C (22:00-06:00)",
+      "loss": 3976.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-013",
+      "start_time": "2025-07-22 11:28:32",
+      "end_time": "2025-07-23 13:30:56",
+      "duration_hours": 26.0,
+      "cause": "Refractory / Coating Failure",
+      "section": "Calciner",
+      "department": "Mechanical",
+      "shift": "A (06:00-14:00)",
+      "loss": 3727.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-005",
+      "start_time": "2025-05-31 15:23:46",
+      "end_time": "2025-06-01 09:37:34",
+      "duration_hours": 18.2,
+      "cause": "Refractory / Coating Failure",
+      "section": "Preheater Tower",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 2430.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-008",
+      "start_time": "2025-06-22 22:51:25",
+      "end_time": "2025-06-23 14:44:13",
+      "duration_hours": 15.9,
+      "cause": "Planned Preventive Halt",
+      "section": "ID Fan",
+      "department": "Maintenance",
+      "shift": "C (22:00-06:00)",
+      "loss": 2261.0,
+      "planned": true
+    },
+    {
+      "stoppage_id": "STP-017",
+      "start_time": "2025-08-21 11:18:04",
+      "end_time": "2025-08-22 02:57:04",
+      "duration_hours": 15.7,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Feed System",
+      "department": "Mechanical",
+      "shift": "A (06:00-14:00)",
+      "loss": 2274.0,
+      "planned": false
+    }
+  ],
+  "recent": [
+    {
+      "stoppage_id": "STP-051",
+      "start_time": "2026-03-27 10:02:50",
+      "end_time": "2026-03-27 14:44:50",
+      "duration_hours": 4.7,
+      "cause": "Fan / Blower Trip",
+      "section": "Instrumentation Loop",
+      "department": "Electrical",
+      "shift": "A (06:00-14:00)",
+      "loss": 691.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-050",
+      "start_time": "2026-03-23 15:09:33",
+      "end_time": "2026-03-24 02:26:21",
+      "duration_hours": 11.3,
+      "cause": "Planned Preventive Halt",
+      "section": "Kiln Shell / Refractory",
+      "department": "Maintenance",
+      "shift": "B (14:00-22:00)",
+      "loss": 1614.0,
+      "planned": true
+    },
+    {
+      "stoppage_id": "STP-049",
+      "start_time": "2026-03-15 04:20:46",
+      "end_time": "2026-03-16 08:00:22",
+      "duration_hours": 27.7,
+      "cause": "Refractory / Coating Failure",
+      "section": "ID Fan",
+      "department": "Mechanical",
+      "shift": "C (22:00-06:00)",
+      "loss": 3976.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-048",
+      "start_time": "2026-03-08 20:23:10",
+      "end_time": "2026-03-11 00:05:46",
+      "duration_hours": 51.7,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Main Drive",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7370.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-047",
+      "start_time": "2026-02-27 22:32:43",
+      "end_time": "2026-02-28 04:53:07",
+      "duration_hours": 6.3,
+      "cause": "Electrical Fault",
+      "section": "Kiln Main Drive",
+      "department": "Electrical",
+      "shift": "C (22:00-06:00)",
+      "loss": 908.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-046",
+      "start_time": "2026-02-24 21:37:07",
+      "end_time": "2026-02-27 02:32:55",
+      "duration_hours": 52.9,
+      "cause": "Refractory / Coating Failure",
+      "section": "Kiln Feed System",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7035.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-045",
+      "start_time": "2026-02-17 20:18:32",
+      "end_time": "2026-02-17 22:02:56",
+      "duration_hours": 1.7,
+      "cause": "Process Upset",
+      "section": "ID Fan",
+      "department": "Operations",
+      "shift": "B (14:00-22:00)",
+      "loss": 259.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-044",
+      "start_time": "2026-02-12 10:38:54",
+      "end_time": "2026-02-12 19:19:06",
+      "duration_hours": 8.7,
+      "cause": "Mechanical Breakdown",
+      "section": "ID Fan",
+      "department": "Mechanical",
+      "shift": "A (06:00-14:00)",
+      "loss": 1138.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-043",
+      "start_time": "2026-02-04 03:11:35",
+      "end_time": "2026-02-04 05:59:35",
+      "duration_hours": 2.8,
+      "cause": "Instrumentation Fault",
+      "section": "Kiln Main Drive",
+      "department": "Instrumentation",
+      "shift": "C (22:00-06:00)",
+      "loss": 411.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-042",
+      "start_time": "2026-01-30 14:25:44",
+      "end_time": "2026-01-30 21:11:20",
+      "duration_hours": 6.8,
+      "cause": "Electrical Fault",
+      "section": "Kiln Main Drive",
+      "department": "Electrical",
+      "shift": "B (14:00-22:00)",
+      "loss": 917.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-041",
+      "start_time": "2026-01-20 19:41:40",
+      "end_time": "2026-01-20 23:14:40",
+      "duration_hours": 3.5,
+      "cause": "Raw Material Shortage",
+      "section": "Calciner",
+      "department": "Operations",
+      "shift": "B (14:00-22:00)",
+      "loss": 522.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-040",
+      "start_time": "2026-01-13 16:57:53",
+      "end_time": "2026-01-16 01:23:05",
+      "duration_hours": 56.4,
+      "cause": "Refractory / Coating Failure",
+      "section": "Clinker Cooler",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 7387.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-039",
+      "start_time": "2026-01-10 19:16:51",
+      "end_time": "2026-01-11 02:06:39",
+      "duration_hours": 6.8,
+      "cause": "Mechanical Breakdown",
+      "section": "Kiln Main Drive",
+      "department": "Mechanical",
+      "shift": "B (14:00-22:00)",
+      "loss": 927.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-038",
+      "start_time": "2025-12-30 21:11:03",
+      "end_time": "2025-12-31 03:30:15",
+      "duration_hours": 6.3,
+      "cause": "Electrical Fault",
+      "section": "Instrumentation Loop",
+      "department": "Electrical",
+      "shift": "B (14:00-22:00)",
+      "loss": 818.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-037",
+      "start_time": "2025-12-26 07:48:46",
+      "end_time": "2025-12-26 13:40:22",
+      "duration_hours": 5.9,
+      "cause": "Electrical Fault",
+      "section": "Burner / Firing System",
+      "department": "Electrical",
+      "shift": "A (06:00-14:00)",
+      "loss": 869.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-036",
+      "start_time": "2025-12-18 21:56:08",
+      "end_time": "2025-12-19 02:20:44",
+      "duration_hours": 4.4,
+      "cause": "Instrumentation Fault",
+      "section": "Kiln Main Drive",
+      "department": "Instrumentation",
+      "shift": "B (14:00-22:00)",
+      "loss": 648.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-035",
+      "start_time": "2025-12-15 00:39:29",
+      "end_time": "2025-12-15 15:19:41",
+      "duration_hours": 14.7,
+      "cause": "Fan / Blower Trip",
+      "section": "Kiln Feed System",
+      "department": "Electrical",
+      "shift": "C (22:00-06:00)",
+      "loss": 1896.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-034",
+      "start_time": "2025-12-05 20:24:50",
+      "end_time": "2025-12-06 07:33:50",
+      "duration_hours": 11.2,
+      "cause": "Raw Material Shortage",
+      "section": "Kiln Main Drive",
+      "department": "Operations",
+      "shift": "B (14:00-22:00)",
+      "loss": 1480.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-033",
+      "start_time": "2025-11-28 09:02:25",
+      "end_time": "2025-11-28 13:52:49",
+      "duration_hours": 4.8,
+      "cause": "Mechanical Breakdown",
+      "section": "Clinker Cooler",
+      "department": "Mechanical",
+      "shift": "A (06:00-14:00)",
+      "loss": 690.0,
+      "planned": false
+    },
+    {
+      "stoppage_id": "STP-032",
+      "start_time": "2025-11-23 03:00:14",
+      "end_time": "2025-11-23 08:00:14",
+      "duration_hours": 5.0,
+      "cause": "Instrumentation Fault",
+      "section": "Instrumentation Loop",
+      "department": "Instrumentation",
+      "shift": "C (22:00-06:00)",
+      "loss": 736.0,
+      "planned": false
+    }
+  ],
+  "chronological": [
+    {
+      "stoppage_id": "STP-001",
+      "start_time": "2025-05-07 08:04:58",
+      "end_time": "2025-05-07 10:42:10"
+    },
+    {
+      "stoppage_id": "STP-002",
+      "start_time": "2025-05-15 07:10:47",
+      "end_time": "2025-05-16 13:43:11"
+    },
+    {
+      "stoppage_id": "STP-003",
+      "start_time": "2025-05-21 03:50:45",
+      "end_time": "2025-05-22 09:55:33"
+    },
+    {
+      "stoppage_id": "STP-004",
+      "start_time": "2025-05-24 17:33:28",
+      "end_time": "2025-05-25 01:08:52"
+    },
+    {
+      "stoppage_id": "STP-005",
+      "start_time": "2025-05-31 15:23:46",
+      "end_time": "2025-06-01 09:37:34"
+    },
+    {
+      "stoppage_id": "STP-006",
+      "start_time": "2025-06-10 05:05:23",
+      "end_time": "2025-06-10 09:16:11"
+    },
+    {
+      "stoppage_id": "STP-007",
+      "start_time": "2025-06-12 02:05:10",
+      "end_time": "2025-06-12 11:42:22"
+    },
+    {
+      "stoppage_id": "STP-008",
+      "start_time": "2025-06-22 22:51:25",
+      "end_time": "2025-06-23 14:44:13"
+    },
+    {
+      "stoppage_id": "STP-009",
+      "start_time": "2025-06-29 07:59:50",
+      "end_time": "2025-06-29 12:01:38"
+    },
+    {
+      "stoppage_id": "STP-010",
+      "start_time": "2025-07-04 02:03:58",
+      "end_time": "2025-07-04 09:15:58"
+    },
+    {
+      "stoppage_id": "STP-011",
+      "start_time": "2025-07-09 17:10:31",
+      "end_time": "2025-07-09 23:34:31"
+    },
+    {
+      "stoppage_id": "STP-012",
+      "start_time": "2025-07-16 02:15:29",
+      "end_time": "2025-07-16 05:17:17"
+    },
+    {
+      "stoppage_id": "STP-013",
+      "start_time": "2025-07-22 11:28:32",
+      "end_time": "2025-07-23 13:30:56"
+    },
+    {
+      "stoppage_id": "STP-014",
+      "start_time": "2025-07-30 00:04:43",
+      "end_time": "2025-07-30 07:14:19"
+    },
+    {
+      "stoppage_id": "STP-015",
+      "start_time": "2025-08-05 19:55:59",
+      "end_time": "2025-08-06 02:30:47"
+    },
+    {
+      "stoppage_id": "STP-016",
+      "start_time": "2025-08-12 14:26:22",
+      "end_time": "2025-08-12 22:42:34"
+    },
+    {
+      "stoppage_id": "STP-017",
+      "start_time": "2025-08-21 11:18:04",
+      "end_time": "2025-08-22 02:57:04"
+    },
+    {
+      "stoppage_id": "STP-018",
+      "start_time": "2025-08-26 21:33:00",
+      "end_time": "2025-08-28 07:12:36"
+    },
+    {
+      "stoppage_id": "STP-019",
+      "start_time": "2025-09-01 11:56:40",
+      "end_time": "2025-09-02 02:41:40"
+    },
+    {
+      "stoppage_id": "STP-020",
+      "start_time": "2025-09-09 23:10:09",
+      "end_time": "2025-09-10 05:11:21"
+    },
+    {
+      "stoppage_id": "STP-021",
+      "start_time": "2025-09-12 08:17:22",
+      "end_time": "2025-09-12 17:09:34"
+    },
+    {
+      "stoppage_id": "STP-022",
+      "start_time": "2025-09-18 13:27:59",
+      "end_time": "2025-09-18 18:06:23"
+    },
+    {
+      "stoppage_id": "STP-023",
+      "start_time": "2025-09-27 11:39:02",
+      "end_time": "2025-09-27 13:16:50"
+    },
+    {
+      "stoppage_id": "STP-024",
+      "start_time": "2025-09-30 23:02:28",
+      "end_time": "2025-10-01 12:08:28"
+    },
+    {
+      "stoppage_id": "STP-025",
+      "start_time": "2025-10-07 10:13:05",
+      "end_time": "2025-10-07 14:59:17"
+    },
+    {
+      "stoppage_id": "STP-026",
+      "start_time": "2025-10-16 11:50:46",
+      "end_time": "2025-10-16 16:21:58"
+    },
+    {
+      "stoppage_id": "STP-027",
+      "start_time": "2025-10-22 17:50:40",
+      "end_time": "2025-10-23 02:26:40"
+    },
+    {
+      "stoppage_id": "STP-028",
+      "start_time": "2025-10-31 15:51:14",
+      "end_time": "2025-10-31 17:26:02"
+    },
+    {
+      "stoppage_id": "STP-029",
+      "start_time": "2025-11-05 15:12:00",
+      "end_time": "2025-11-07 12:15:36"
+    },
+    {
+      "stoppage_id": "STP-030",
+      "start_time": "2025-11-11 12:41:19",
+      "end_time": "2025-11-11 20:13:07"
+    },
+    {
+      "stoppage_id": "STP-031",
+      "start_time": "2025-11-17 22:42:53",
+      "end_time": "2025-11-18 06:56:41"
+    },
+    {
+      "stoppage_id": "STP-032",
+      "start_time": "2025-11-23 03:00:14",
+      "end_time": "2025-11-23 08:00:14"
+    },
+    {
+      "stoppage_id": "STP-033",
+      "start_time": "2025-11-28 09:02:25",
+      "end_time": "2025-11-28 13:52:49"
+    },
+    {
+      "stoppage_id": "STP-034",
+      "start_time": "2025-12-05 20:24:50",
+      "end_time": "2025-12-06 07:33:50"
+    },
+    {
+      "stoppage_id": "STP-035",
+      "start_time": "2025-12-15 00:39:29",
+      "end_time": "2025-12-15 15:19:41"
+    },
+    {
+      "stoppage_id": "STP-036",
+      "start_time": "2025-12-18 21:56:08",
+      "end_time": "2025-12-19 02:20:44"
+    },
+    {
+      "stoppage_id": "STP-037",
+      "start_time": "2025-12-26 07:48:46",
+      "end_time": "2025-12-26 13:40:22"
+    },
+    {
+      "stoppage_id": "STP-038",
+      "start_time": "2025-12-30 21:11:03",
+      "end_time": "2025-12-31 03:30:15"
+    },
+    {
+      "stoppage_id": "STP-039",
+      "start_time": "2026-01-10 19:16:51",
+      "end_time": "2026-01-11 02:06:39"
+    },
+    {
+      "stoppage_id": "STP-040",
+      "start_time": "2026-01-13 16:57:53",
+      "end_time": "2026-01-16 01:23:05"
+    },
+    {
+      "stoppage_id": "STP-041",
+      "start_time": "2026-01-20 19:41:40",
+      "end_time": "2026-01-20 23:14:40"
+    },
+    {
+      "stoppage_id": "STP-042",
+      "start_time": "2026-01-30 14:25:44",
+      "end_time": "2026-01-30 21:11:20"
+    },
+    {
+      "stoppage_id": "STP-043",
+      "start_time": "2026-02-04 03:11:35",
+      "end_time": "2026-02-04 05:59:35"
+    },
+    {
+      "stoppage_id": "STP-044",
+      "start_time": "2026-02-12 10:38:54",
+      "end_time": "2026-02-12 19:19:06"
+    },
+    {
+      "stoppage_id": "STP-045",
+      "start_time": "2026-02-17 20:18:32",
+      "end_time": "2026-02-17 22:02:56"
+    },
+    {
+      "stoppage_id": "STP-046",
+      "start_time": "2026-02-24 21:37:07",
+      "end_time": "2026-02-27 02:32:55"
+    },
+    {
+      "stoppage_id": "STP-047",
+      "start_time": "2026-02-27 22:32:43",
+      "end_time": "2026-02-28 04:53:07"
+    },
+    {
+      "stoppage_id": "STP-048",
+      "start_time": "2026-03-08 20:23:10",
+      "end_time": "2026-03-11 00:05:46"
+    },
+    {
+      "stoppage_id": "STP-049",
+      "start_time": "2026-03-15 04:20:46",
+      "end_time": "2026-03-16 08:00:22"
+    },
+    {
+      "stoppage_id": "STP-050",
+      "start_time": "2026-03-23 15:09:33",
+      "end_time": "2026-03-24 02:26:21"
+    },
+    {
+      "stoppage_id": "STP-051",
+      "start_time": "2026-03-27 10:02:50",
+      "end_time": "2026-03-27 14:44:50"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# Keep the serverless bundle small. None of this is needed to serve a request.
+
+tests/
+scripts/
+legacy/
+
+# Raw datasets are only inputs to the generators and the trainer. The runtime
+# needs the trained model and the precomputed kiln analytics, both of which are
+# committed and are NOT excluded here.
+dataset/machine_telemetry.csv
+dataset/kiln_stoppages.csv
+dataset/dataset_profile.json
+
+# Local-only artefacts
+instance/
+.env
+README.md
+INTAKE.txt
+render.yaml
+Procfile
+.git/
+__pycache__/

@@ -45,14 +45,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
 
 
+NUMERIC_SLICE = list(range(len(config.NUMERIC_FEATURES)))     # columns 0..4
+CATEGORICAL_SLICE = [len(config.NUMERIC_FEATURES)]            # column 5
+
+
 def build_pipeline() -> Pipeline:
+    # Columns are selected by POSITION, not by name, so the fitted pipeline
+    # accepts a plain NumPy array at inference time and pandas is not needed in
+    # the deployed runtime. Categories are declared explicitly so the one-hot
+    # block has a stable width even if a class is absent from a split.
     preprocessor = ColumnTransformer(
         transformers=[
-            ("num", StandardScaler(), config.NUMERIC_FEATURES),
+            ("num", StandardScaler(), NUMERIC_SLICE),
             (
                 "cat",
-                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
-                config.CATEGORICAL_FEATURES,
+                OneHotEncoder(
+                    categories=[[0, 1, 2]],
+                    handle_unknown="ignore",
+                    sparse_output=False,
+                ),
+                CATEGORICAL_SLICE,
             ),
         ],
         remainder="drop",
@@ -68,25 +80,36 @@ def build_pipeline() -> Pipeline:
 
 
 def aggregate_importances(pipeline: Pipeline) -> dict[str, float]:
-    """Collapse one-hot columns back onto their source feature, then scale to %."""
-    encoded_names = pipeline.named_steps["preprocessor"].get_feature_names_out()
+    """Collapse one-hot columns back onto their source feature, then scale to %.
+
+    The transformer emits the scaled numeric columns first, in the order of
+    NUMERIC_FEATURES, followed by the one-hot block for the machine class. The
+    mapping is therefore positional, which stays correct now that the
+    ColumnTransformer selects columns by index rather than by name.
+    """
     raw = pipeline.named_steps["classifier"].feature_importances_
+    numeric_count = len(config.NUMERIC_FEATURES)
 
     totals: dict[str, float] = {
-        name: 0.0 for name in config.NUMERIC_FEATURES + config.CATEGORICAL_FEATURES
+        name: float(raw[index])
+        for index, name in enumerate(config.NUMERIC_FEATURES)
     }
-    for encoded, weight in zip(encoded_names, raw):
-        body = encoded.split("__", 1)[1]
-        if body in totals:
-            totals[body] += float(weight)
-            continue
-        for source in config.CATEGORICAL_FEATURES:
-            if body.startswith(source):
-                totals[source] += float(weight)
-                break
+    # Everything after the numeric block belongs to the machine class.
+    totals["machine_type"] = float(sum(raw[numeric_count:]))
 
     total = sum(totals.values()) or 1.0
     return {name: round(value / total * 100.0, 2) for name, value in totals.items()}
+
+
+def build_matrix(frame) -> "np.ndarray":
+    """Assemble the numeric design matrix the pipeline expects."""
+    columns = [frame[name].to_numpy(dtype=float)
+               for name in config.NUMERIC_FEATURES]
+    codes = frame["machine_type"].map(config.MACHINE_TYPE_CODES)
+    if codes.isna().any():
+        raise ValueError("dataset contains an unknown machine_type value")
+    columns.append(codes.to_numpy(dtype=float))
+    return np.column_stack(columns)
 
 
 def main() -> None:
@@ -98,8 +121,8 @@ def main() -> None:
 
     frame = pd.read_csv(config.TELEMETRY_CSV)
     features = config.NUMERIC_FEATURES + config.CATEGORICAL_FEATURES
-    X = frame[features]
-    y = frame[config.TARGET].astype(int)
+    X = build_matrix(frame)
+    y = frame[config.TARGET].astype(int).to_numpy()
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
@@ -213,16 +236,10 @@ def main() -> None:
         ("Heat stall   ", "M", 303.0, 309.5, 1290, 45.0, 120),
     ]
     for label, machine_type, air, process, rpm, torque, wear in samples:
-        row = pd.DataFrame(
-            [{
-                "air_temperature_k": air,
-                "process_temperature_k": process,
-                "rotational_speed_rpm": rpm,
-                "torque_nm": torque,
-                "tool_wear_min": wear,
-                "machine_type": machine_type,
-            }]
-        )[features]
+        row = np.array([[
+            air, process, rpm, torque, wear,
+            config.MACHINE_TYPE_CODES[machine_type],
+        ]], dtype=float)
         probability_value = float(pipeline.predict_proba(row)[0][1]) * 100.0
         print(f"    {label} fail = {probability_value:6.2f}%   "
               f"health = {100 - probability_value:6.2f}")

@@ -12,12 +12,11 @@ services:
     plan: free
     region: singapore          # closest free region to India
     branch: main
+    # The trained model and the precomputed kiln analytics are committed, so the
+    # build only installs runtime dependencies. Nothing is trained on the server.
     buildCommand: >-
       pip install --upgrade pip &&
-      pip install -r requirements.txt &&
-      python scripts/generate_synthetic_dataset.py &&
-      python scripts/generate_kiln_dataset.py &&
-      python scripts/train_model.py
+      pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
     healthCheckPath: /login
     envVars:

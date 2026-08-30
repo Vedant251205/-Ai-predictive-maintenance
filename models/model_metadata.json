@@ -1,0 +1,178 @@
+{
+  "trained_at": "2026-08-31 01:31:26",
+  "algorithm": "RandomForestClassifier",
+  "n_estimators": 150,
+  "max_depth": 16,
+  "preprocessor": "ColumnTransformer(StandardScaler + OneHotEncoder)",
+  "features": [
+    "air_temperature_k",
+    "process_temperature_k",
+    "rotational_speed_rpm",
+    "torque_nm",
+    "tool_wear_min",
+    "machine_type"
+  ],
+  "feature_labels": {
+    "air_temperature_k": "Air Temperature (K)",
+    "process_temperature_k": "Process Temp (K)",
+    "rotational_speed_rpm": "Rotational Speed (RPM)",
+    "torque_nm": "Torque (Nm)",
+    "tool_wear_min": "Tool Wear (min)",
+    "machine_type": "Machine Type / Quality"
+  },
+  "dataset_rows": 1500,
+  "train_rows": 1125,
+  "test_rows": 375,
+  "positive_rate_pct": 33.93,
+  "metrics": {
+    "accuracy": 84.0,
+    "precision": 80.18,
+    "recall": 70.08,
+    "f1": 74.79,
+    "roc_auc": 87.68,
+    "cv_f1_mean": 76.12,
+    "cv_f1_std": 2.5
+  },
+  "confusion_matrix": {
+    "true_negative": 226,
+    "false_positive": 22,
+    "false_negative": 38,
+    "true_positive": 89
+  },
+  "feature_importance": {
+    "air_temperature_k": 10.27,
+    "process_temperature_k": 11.73,
+    "rotational_speed_rpm": 25.66,
+    "torque_nm": 31.88,
+    "tool_wear_min": 18.02,
+    "machine_type": 2.43
+  },
+  "feature_importance_ranked": [
+    {
+      "feature": "torque_nm",
+      "label": "Torque (Nm)",
+      "pct": 31.88
+    },
+    {
+      "feature": "rotational_speed_rpm",
+      "label": "Rotational Speed (RPM)",
+      "pct": 25.66
+    },
+    {
+      "feature": "tool_wear_min",
+      "label": "Tool Wear (min)",
+      "pct": 18.02
+    },
+    {
+      "feature": "process_temperature_k",
+      "label": "Process Temp (K)",
+      "pct": 11.73
+    },
+    {
+      "feature": "air_temperature_k",
+      "label": "Air Temperature (K)",
+      "pct": 10.27
+    },
+    {
+      "feature": "machine_type",
+      "label": "Machine Type / Quality",
+      "pct": 2.43
+    }
+  ],
+  "permutation_importance": {
+    "air_temperature_k": 6.35,
+    "process_temperature_k": 7.58,
+    "rotational_speed_rpm": 31.65,
+    "torque_nm": 35.6,
+    "tool_wear_min": 18.3,
+    "machine_type": 0.52
+  },
+  "collinearity": {
+    "vif": {
+      "air_temperature_k": 3.34,
+      "process_temperature_k": 3.34,
+      "rotational_speed_rpm": 2.54,
+      "torque_nm": 2.53,
+      "tool_wear_min": 1.01
+    },
+    "correlation_keys": [
+      "air_temperature_k",
+      "process_temperature_k",
+      "rotational_speed_rpm",
+      "torque_nm",
+      "tool_wear_min"
+    ],
+    "correlation_labels": [
+      "Air Temperature (K)",
+      "Process Temp (K)",
+      "Rotational Speed (RPM)",
+      "Torque (Nm)",
+      "Tool Wear (min)"
+    ],
+    "correlation_matrix": [
+      [
+        1.0,
+        0.837,
+        0.019,
+        -0.029,
+        -0.028
+      ],
+      [
+        0.837,
+        1.0,
+        0.031,
+        -0.035,
+        -0.018
+      ],
+      [
+        0.019,
+        0.031,
+        1.0,
+        -0.777,
+        0.055
+      ],
+      [
+        -0.029,
+        -0.035,
+        -0.777,
+        1.0,
+        -0.013
+      ],
+      [
+        -0.028,
+        -0.018,
+        0.055,
+        -0.013,
+        1.0
+      ]
+    ],
+    "preserved_relationships": [
+      {
+        "name": "Thermal coupling",
+        "pair": "Air Temperature <-> Process Temp",
+        "expected": "strong positive",
+        "observed_r": 0.837
+      },
+      {
+        "name": "Mechanical coupling",
+        "pair": "Torque <-> Rotational Speed",
+        "expected": "strong negative",
+        "observed_r": -0.777
+      },
+      {
+        "name": "Duty coupling",
+        "pair": "Machine Type <-> Tool Wear",
+        "expected": "light-duty wears faster",
+        "observed_r": 0.165
+      }
+    ]
+  },
+  "failure_modes": {
+    "twf_tool_wear": 67,
+    "hdf_heat_dissipation": 96,
+    "pwf_power": 83,
+    "osf_overstrain": 50,
+    "osp_overspeed": 164,
+    "tol_torque_overload": 154
+  }
+}

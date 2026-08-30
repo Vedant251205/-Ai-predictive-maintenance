@@ -1,14 +1,17 @@
+# Runtime dependencies only - this is what gets installed on the host.
+#
+# pandas is deliberately absent. It is needed only to regenerate the datasets
+# and to run the test suite, both of which are development tasks. Leaving it out
+# removes about 62 MB from the deployed bundle, which is what allows the
+# platform to fit inside a serverless size limit.
+# See requirements-dev.txt for the full development set.
+
 Flask==3.1.2
 Werkzeug==3.1.3
-pandas==2.3.3
 numpy==2.4.1
 scikit-learn==1.8.0
 joblib==1.5.3
 python-dotenv==1.2.1
 
-# Production WSGI server. Linux/macOS only, which is fine because the hosting
-# platform runs Linux. Local development uses `python app.py` instead.
+# Production WSGI server (Linux/macOS). Local development uses `python app.py`.
 gunicorn==23.0.0
-
-# Optional: only needed if you set SMS_ENABLED=1 in .env
-# twilio==9.3.7

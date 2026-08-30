@@ -1,0 +1,9 @@
+# Development dependencies: everything needed to regenerate the datasets,
+# retrain the model and run the test suite.
+#
+#   python -m pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# Used by scripts/ and tests/ only, never on the request path.
+pandas==2.3.3
